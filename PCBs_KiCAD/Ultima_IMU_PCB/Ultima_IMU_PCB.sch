@@ -1,0 +1,206 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:switches
+LIBS:relays
+LIBS:motors
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:internalLib
+LIBS:Ultima_IMU_PCB-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L SentralM&M U1
+U 1 1 5A99D384
+P 6120 3830
+F 0 "U1" H 5670 4380 50  0000 C CNN
+F 1 "SentralM&M" H 6330 3360 50  0000 C CNN
+F 2 "InternalLib:SentralM&M" H 6120 3030 50  0001 C CNN
+F 3 "" H 6120 3680 50  0001 C CNN
+	1    6120 3830
+	1    0    0    -1  
+$EndComp
+$Comp
+L SM06B-NSHSS-TB J1
+U 1 1 5A9A0BB7
+P 5935 2090
+F 0 "J1" H 5935 2390 50  0000 C CNN
+F 1 "SM06B-NSHSS-TB" H 5935 1690 50  0000 C CNN
+F 2 "InternalLib:SM06B-NSHSS-TB" H 5935 2090 50  0001 C CNN
+F 3 "" H 5935 2090 50  0001 C CNN
+	1    5935 2090
+	0    -1   -1   0   
+$EndComp
+$Comp
+L C C1
+U 1 1 5A9A0CCA
+P 4995 3940
+F 0 "C1" H 5020 4040 50  0000 L CNN
+F 1 "10uF" H 5020 3840 50  0000 L CNN
+F 2 "Capacitors_THT:C_Disc_D3.0mm_W2.0mm_P2.50mm" H 5033 3790 50  0001 C CNN
+F 3 "" H 4995 3940 50  0001 C CNN
+	1    4995 3940
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3V3 #PWR01
+U 1 1 5A9A0D6F
+P 4995 3705
+F 0 "#PWR01" H 4995 3555 50  0001 C CNN
+F 1 "+3V3" H 4995 3845 50  0000 C CNN
+F 2 "" H 4995 3705 50  0001 C CNN
+F 3 "" H 4995 3705 50  0001 C CNN
+	1    4995 3705
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR02
+U 1 1 5A9A0D89
+P 5275 4135
+F 0 "#PWR02" H 5275 3885 50  0001 C CNN
+F 1 "GND" H 5275 3985 50  0000 C CNN
+F 2 "" H 5275 4135 50  0001 C CNN
+F 3 "" H 5275 4135 50  0001 C CNN
+	1    5275 4135
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5275 4070 5275 4135
+Wire Wire Line
+	5275 4070 5410 4070
+Wire Wire Line
+	4995 4090 5275 4090
+Wire Wire Line
+	5275 4090 5275 4085
+Connection ~ 5275 4085
+Wire Wire Line
+	4995 3705 4995 3790
+Wire Wire Line
+	5420 3850 5205 3850
+Wire Wire Line
+	5205 3850 5205 3745
+Wire Wire Line
+	5205 3745 4995 3745
+Connection ~ 4995 3745
+$Comp
+L GND #PWR03
+U 1 1 5A9A1007
+P 6805 3650
+F 0 "#PWR03" H 6805 3400 50  0001 C CNN
+F 1 "GND" H 6805 3500 50  0000 C CNN
+F 2 "" H 6805 3650 50  0001 C CNN
+F 3 "" H 6805 3650 50  0001 C CNN
+	1    6805 3650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6620 3650 6805 3650
+NoConn ~ 6620 3750
+NoConn ~ 6620 3850
+NoConn ~ 6630 4070
+NoConn ~ 6040 4400
+NoConn ~ 6030 3130
+$Comp
+L +3V3 #PWR04
+U 1 1 5A9A117C
+P 6130 3130
+F 0 "#PWR04" H 6130 2980 50  0001 C CNN
+F 1 "+3V3" H 6130 3270 50  0000 C CNN
+F 2 "" H 6130 3130 50  0001 C CNN
+F 3 "" H 6130 3130 50  0001 C CNN
+	1    6130 3130
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5910 3130 5910 2805
+Wire Wire Line
+	5910 2805 6135 2805
+Wire Wire Line
+	6135 2805 6135 2290
+Wire Wire Line
+	5420 3660 5420 2655
+Wire Wire Line
+	5420 2655 6035 2655
+Wire Wire Line
+	6035 2655 6035 2290
+Wire Wire Line
+	5420 3750 5295 3750
+Wire Wire Line
+	5295 3750 5295 2545
+Wire Wire Line
+	5295 2545 5935 2545
+Wire Wire Line
+	5935 2545 5935 2290
+$Comp
+L GND #PWR05
+U 1 1 5A9A1735
+P 5735 2290
+F 0 "#PWR05" H 5735 2040 50  0001 C CNN
+F 1 "GND" H 5735 2140 50  0000 C CNN
+F 2 "" H 5735 2290 50  0001 C CNN
+F 3 "" H 5735 2290 50  0001 C CNN
+	1    5735 2290
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3V3 #PWR06
+U 1 1 5A9A1752
+P 5825 1950
+F 0 "#PWR06" H 5825 1800 50  0001 C CNN
+F 1 "+3V3" H 5825 2090 50  0000 C CNN
+F 2 "" H 5825 1950 50  0001 C CNN
+F 3 "" H 5825 1950 50  0001 C CNN
+	1    5825 1950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5835 2290 5875 2290
+Wire Wire Line
+	5875 2290 5875 1950
+Wire Wire Line
+	5875 1950 5825 1950
+Text Label 5295 2545 0    60   ~ 0
+SCL
+Text Label 5420 2655 0    60   ~ 0
+INT
+Text Label 5910 2805 0    60   ~ 0
+SDA
+$EndSCHEMATC
