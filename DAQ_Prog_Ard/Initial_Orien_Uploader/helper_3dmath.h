@@ -87,74 +87,8 @@ class Quaternion {
             r.normalize();
             return r;
         }
-
-        //Changes the sign of the quaternion components. This is not the same as the inverse. Added by J.Ojo
-        Quaternion flipQuatSign(){
-          Quaternion r(-w, -x, -y, -z);
-          return r;
-        }
 };
 
-// ######### Stuff I Added - J.Ojo ################
-float dotProduct(Quaternion q1, Quaternion q2)
-{
-  return q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;
-}
-
-bool AreQuaternionsClose(Quaternion q1, Quaternion q2){
- 
-  float dot = dotProduct(q1, q2);
- 
-  if(dot < 0.0f){
- 
-    return false;         
-  }
- 
-  else{
- 
-    return true;
-  }
-}
-
-
-// http://wiki.unity3d.com/index.php/Averaging_Quaternions_and_Vectors
-//Get an average (mean) from more than two quaternions (with two, slerp would be used).
-//Note: this only works if all the quaternions are relatively close together.
-//Usage: 
-//-Cumulative is an external Vector4 which holds all the added x y z and w components.
-//-newRotation is the next rotation to be added to the average pool
-//-firstRotation is the first quaternion of the array to be averaged
-//-addAmount holds the total amount of quaternions which are currently added
-//This function returns the current average quaternion
-Quaternion averageQuat(Quaternion *cumulative, Quaternion newRotation, Quaternion firstRotation, int addAmount){
- 
-  float w = 0.0f;
-  float x = 0.0f;
-  float y = 0.0f;
-  float z = 0.0f;
- 
-  //Before we add the new rotation to the average (mean), we have to check whether the quaternion has to be inverted. Because
-  //q and -q are the same rotation, but cannot be averaged, we have to make sure they are all the same.
-  if(AreQuaternionsClose(newRotation, firstRotation)){
- 
-    newRotation = newRotation.flipQuatSign();  
-  }
- 
-  //Average the values
-  float addDet = 1.0f/(float)addAmount;
-  cumulative -> w += newRotation.w;
-  w = cumulative -> w * addDet;
-  cumulative -> x += newRotation.x;
-  x = cumulative -> x * addDet;
-  cumulative -> y += newRotation.y;
-  y = cumulative -> y * addDet;
-  cumulative -> z += newRotation.z;
-  z = cumulative -> z * addDet;    
- 
-  //note: if speed is an issue, you can skip the normalization step
-  return Quaternion(x, y, z, w).getNormalized();
-}
-// ################################################
 class VectorInt16 {
     public:
         int16_t x;

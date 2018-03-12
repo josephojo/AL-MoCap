@@ -170,7 +170,7 @@ class SentralMM {
         // QRate = GRate / QrateDivisor
 
         void setSensorRates(uint8_t gRate, uint8_t aRate, uint8_t mRate);
-        uint8_t getQRate();
+        uint8_t getQRateDivisor();
         void setQRateDivisor(uint8_t divisor);
         uint8_t getMRate();
         void setMRate(uint8_t rate);
@@ -215,6 +215,7 @@ class SentralMM {
         // Stanby State configurations
         void setStandbyState(bool enabled);
         bool getStandbyState();
+        bool getStandbyStatus();
 
         // Normal Operation State Configuration
         void setNormalState(bool enabled);
@@ -234,6 +235,7 @@ class SentralMM {
         
         // Quaternion_*OUT_* registers
         void getQuat(float* qx, float* qy, float* qz, float *qw);
+        void getQuat(Quaternion* q);
         void getQuat(float* qx, float* qy, float* qz, float *qw, uint16_t* qTime);
         float getQuatX();
         float getQuatY();
@@ -264,58 +266,61 @@ class SentralMM {
         int16_t getMagY();
         int16_t getMagZ();
         uint16_t getMagTime();
-        
-            // Get Fixed Point data from FIFO
-            uint8_t extractAccel(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractAccel(int16_t *data, const uint8_t* packet=0);
-            uint8_t extractAccel(VectorInt16 *v, const uint8_t* packet=0);
-            uint8_t extractQuaternion(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractQuaternion(int16_t *data, const uint8_t* packet=0);
-            uint8_t extractQuaternion(Quaternion *q, const uint8_t* packet=0);
-            uint8_t extract6AxisQuaternion(int32_t *data, const uint8_t* packet=0);
-            uint8_t extract6AxisQuaternion(int16_t *data, const uint8_t* packet=0);
-            uint8_t extract6AxisQuaternion(Quaternion *q, const uint8_t* packet=0);
-            uint8_t extractRelativeQuaternion(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractRelativeQuaternion(int16_t *data, const uint8_t* packet=0);
-            uint8_t extractRelativeQuaternion(Quaternion *data, const uint8_t* packet=0);
-            uint8_t extractGyro(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractGyro(int16_t *data, const uint8_t* packet=0);
-            uint8_t extractGyro(VectorInt16 *v, const uint8_t* packet=0);
-            uint8_t dmpSetLinearAccelFilterCoefficient(float coef);
-            uint8_t extractLinearAccel(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractLinearAccel(int16_t *data, const uint8_t* packet=0);
-            uint8_t extractLinearAccel(VectorInt16 *v, const uint8_t* packet=0);
-            uint8_t extractLinearAccel(VectorInt16 *v, VectorInt16 *vRaw, VectorFloat *gravity);
-            uint8_t extractLinearAccelInWorld(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractLinearAccelInWorld(int16_t *data, const uint8_t* packet=0);
-            uint8_t extractLinearAccelInWorld(VectorInt16 *v, const uint8_t* packet=0);
-            uint8_t extractLinearAccelInWorld(VectorInt16 *v, VectorInt16 *vReal, Quaternion *q);
-            uint8_t extractGyroAndAccelSensor(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractGyroAndAccelSensor(int16_t *data, const uint8_t* packet=0);
-            uint8_t extractGyroAndAccelSensor(VectorInt16 *g, VectorInt16 *a, const uint8_t* packet=0);
-            uint8_t extractGyroSensor(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractGyroSensor(int16_t *data, const uint8_t* packet=0);
-            uint8_t extractGyroSensor(VectorInt16 *v, const uint8_t* packet=0);
-            uint8_t extractControlData(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractTemperature(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractGravity(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractGravity(int16_t *data, const uint8_t* packet=0);
-            uint8_t extractGravity(VectorInt16 *v, const uint8_t* packet=0);
-            uint8_t extractGravity(VectorFloat *v, Quaternion *q);
-            uint8_t extractUnquantizedAccel(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractUnquantizedAccel(int16_t *data, const uint8_t* packet=0);
-            uint8_t extractUnquantizedAccel(VectorInt16 *v, const uint8_t* packet=0);
-            uint8_t extractQuantizedAccel(int32_t *data, const uint8_t* packet=0);
-            uint8_t extractQuantizedAccel(int16_t *data, const uint8_t* packet=0);
-            uint8_t extractQuantizedAccel(VectorInt16 *v, const uint8_t* packet=0);
-            uint8_t extractEIS(int32_t *data, const uint8_t* packet=0);
-            
-            uint8_t extractEuler(float *data, Quaternion *q);
-            uint8_t extractYawPitchRoll(float *data, Quaternion *q, VectorFloat *gravity);
 
-            // Get Floating Point data from FIFO
-            uint8_t extractAccelFloat(float *data, const uint8_t* packet=0);
-            uint8_t extractQuaternionFloat(float *data, const uint8_t* packet=0);
+        uint8_t quat2YPR(float *data, Quaternion *q);
+        
+//        
+//            // Get Fixed Point data from FIFO
+//            uint8_t extractAccel(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractAccel(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extractAccel(VectorInt16 *v, const uint8_t* packet=0);
+//            uint8_t extractQuaternion(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractQuaternion(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extractQuaternion(Quaternion *q, const uint8_t* packet=0);
+//            uint8_t extract6AxisQuaternion(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extract6AxisQuaternion(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extract6AxisQuaternion(Quaternion *q, const uint8_t* packet=0);
+//            uint8_t extractRelativeQuaternion(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractRelativeQuaternion(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extractRelativeQuaternion(Quaternion *data, const uint8_t* packet=0);
+//            uint8_t extractGyro(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractGyro(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extractGyro(VectorInt16 *v, const uint8_t* packet=0);
+//            uint8_t dmpSetLinearAccelFilterCoefficient(float coef);
+//            uint8_t extractLinearAccel(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractLinearAccel(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extractLinearAccel(VectorInt16 *v, const uint8_t* packet=0);
+//            uint8_t extractLinearAccel(VectorInt16 *v, VectorInt16 *vRaw, VectorFloat *gravity);
+//            uint8_t extractLinearAccelInWorld(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractLinearAccelInWorld(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extractLinearAccelInWorld(VectorInt16 *v, const uint8_t* packet=0);
+//            uint8_t extractLinearAccelInWorld(VectorInt16 *v, VectorInt16 *vReal, Quaternion *q);
+//            uint8_t extractGyroAndAccelSensor(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractGyroAndAccelSensor(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extractGyroAndAccelSensor(VectorInt16 *g, VectorInt16 *a, const uint8_t* packet=0);
+//            uint8_t extractGyroSensor(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractGyroSensor(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extractGyroSensor(VectorInt16 *v, const uint8_t* packet=0);
+//            uint8_t extractControlData(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractTemperature(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractGravity(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractGravity(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extractGravity(VectorInt16 *v, const uint8_t* packet=0);
+//            uint8_t extractGravity(VectorFloat *v, Quaternion *q);
+//            uint8_t extractUnquantizedAccel(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractUnquantizedAccel(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extractUnquantizedAccel(VectorInt16 *v, const uint8_t* packet=0);
+//            uint8_t extractQuantizedAccel(int32_t *data, const uint8_t* packet=0);
+//            uint8_t extractQuantizedAccel(int16_t *data, const uint8_t* packet=0);
+//            uint8_t extractQuantizedAccel(VectorInt16 *v, const uint8_t* packet=0);
+//            uint8_t extractEIS(int32_t *data, const uint8_t* packet=0);
+            
+//            uint8_t extractEuler(float *data, Quaternion *q);
+//            uint8_t extractYawPitchRoll(float *data, Quaternion *q, VectorFloat *gravity);
+//
+//            // Get Floating Point data from FIFO
+//            uint8_t extractAccelFloat(float *data, const uint8_t* packet=0);
+//            uint8_t extractQuaternionFloat(float *data, const uint8_t* packet=0);
 
     private:
         uint8_t devAddr;

@@ -1,6 +1,7 @@
 
 
 #include "SentralMM.h"
+#include "helper_3dmath.h"
 
 /** Default constructor, uses default I2C address.
  * @see SentralMM_DEFAULT_ADDRESS
@@ -15,7 +16,7 @@ SentralMM::SentralMM() {
  * @param timeout Optional read timeout in milliseconds (0 to disable, leave off to use default class value)
  * @return 0 = Success, else, error value stored in register( bit 5 -> 0)
  */
-uint8_t SentralMM::initialize(uint16_t timeout = 1000) {
+uint8_t SentralMM::initialize(uint16_t timeout) {
   
     // Read Sentral status (upload of configuration file from eeprom)
     getSentralStatus();
@@ -246,8 +247,8 @@ uint8_t SentralMM::getGyroResultIntEvent(){
 
 // --------------------------------------------------------------------------------------------
 // Pass thru is when the host is speaking directly with individual sensors
-void SentralMM::setPassThruState(bool enabled);
-bool SentralMM::getPassThruState();
+//void SentralMM::setPassThruState(bool enabled);
+//bool SentralMM::getPassThruState();
 
 // Stanby State configurations
 void SentralMM::setStandbyState(bool enabled){
@@ -285,7 +286,7 @@ bool SentralMM::getNormalState(){
  *    In the event of an error, reset the Sentral (@see SentralMM::restartSentral) or you could troublehoot
  *    To troubshoot (@see Sentral::getMRate, Sentral::getARate, Sentral::getGRate for a value of 0x00 meaning a loss of value)
  *        or (@see SentralMM::SentralMM::getEEUploadErr or SentralMM::getResetStatus)
- * @return value a combination of all documented bits except CPUReset as a number (MSB first, LSB last (endianness))
+ * @return value a combination of all documented bits except CPUReset as a number (MSB first, LSB last (endianness)) -> [GyroResult, AccelResult, MagResult, QuatResult, Error]
  */
 uint8_t SentralMM::getIntStatus(){
   I2Cdev::readBits(devAddr, SentralMM_INTERRUPT_STATUS, SentralMM_INTERRUPT_STATUS_GYRO_BIT, SentralMM_INT_STATUS_LENGTH, buffer);
@@ -311,7 +312,7 @@ uint8_t SentralMM::getResetStatus(){
 void SentralMM::getQuat(float* qx, float* qy, float* qz, float *qw){
   uint8_t arrLength = 16;
   byte buff[arrLength];
-  float arr[arrlength / 4]; // Array to store the extracted and converted values
+  float arr[arrLength / 4]; // Array to store the extracted and converted values
   uint8_t a = arrLength - 1;
   uint8_t b = 0;
   I2Cdev::readBytes(devAddr, SentralMM_RESULT_QX_LL, arrLength, buff);
@@ -325,6 +326,31 @@ void SentralMM::getQuat(float* qx, float* qy, float* qz, float *qw){
   *qy = arr[1];
   *qz = arr[2];
   *qw = arr[3];
+}
+
+/*Gets the quaternion values from the sensor
+ * @param qx - The address where the X quaternion component is stored
+ * @param qy - The address where the Y quaternion component is stored
+ * @param qz - The address where the Z quaternion component is stored
+ * @param qw - The address where the W quaternion component is stored
+ */
+void SentralMM::getQuat(Quaternion* q){
+  uint8_t arrLength = 16;
+  byte buff[arrLength];
+  float arr[arrLength / 4]; // Array to store the extracted and converted values
+  uint8_t a = arrLength - 1;
+  uint8_t b = 0;
+  I2Cdev::readBytes(devAddr, SentralMM_RESULT_QX_LL, arrLength, buff);
+  while(a >= 0)
+  {
+    uint32_t val = (buff[a] << 24) | (buff[a - 1] << 16) | (buff[a - 2] << 8) | buff[a - 3];
+    arr[b++] = *(float*)&val; // Converts IEEE 754 32 bit to float
+    a = a - 4;
+  }
+  q -> x = arr[0];
+  q -> y = arr[1];
+  q -> z = arr[2];
+  q -> w = arr[3];
 }
 
 /*Gets the quaternion values and quaternion read-time from the sensor
@@ -376,7 +402,7 @@ uint16_t SentralMM::getQuatTime(){
    return (buffer[1] << 8) | buffer[0];
 }
 
-uint8_t SentralMM::Quat2YPR(float *data, Quaternion *q) {
+uint8_t SentralMM::quat2YPR(float *data, Quaternion *q) {
     // yaw: (about Z axis)
     data[0] = atan2(2.0 * (q->y * q->z + q->w * q->x), (q->w * q->w) + (q->x * q->x) - (q->y * q->y) - (q->z * q->z));
     // pitch: (nose up/down, about Y axis)

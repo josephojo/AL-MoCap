@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include "SentralMM.h"
 #include "I2Cdev.h"
+#include <EEPROM.h>
 
 
 //Uncomment "WRITE_TO_CLOUD" to print to SD card
@@ -15,71 +16,72 @@
 //Uncomment "DEBUG_CODE" to print to SD card
 // #define DEBUG_CODE
 
-// uncomment "OUTPUT_READABLE_EULER" if you want to see Euler angles
-// (in degrees) calculated from the quaternions coming from the FIFO.
-// Note that Euler angles suffer from gimbal lock (for more info, see
-// http://en.wikipedia.org/wiki/Gimbal_lock)
-// #define OUTPUT_READABLE_EULER
+// ########### Pin Definitions ############
+#define LED1_PIN 2 // LED Indicator pin
+#define LED2_PIN 3 // LED Indicator pin
+#define VIB1_PIN 4
+#define VIB2_PIN 5
+#define VIB3_PIN 6
+#define VIB4_PIN 7
+#define BUTTON_INT 8
+#define SENTRAL0_INT 24
+#define SENTRAL1_INT 25
+#define SENTRAL2_INT 26
+#define SENTRAL3_INT 27
+#define SENTRAL4_INT 28
+#define SENTRAL5_INT 29
+#define SENTRAL6_INT 30
+// ########### End of Pin Definitions ############
 
-// uncomment "OUTPUT_READABLE_YAWPITCHROLL" if you want to see the yaw/
-// pitch/roll angles (in degrees) calculated from the quaternions coming
-// from the FIFO. Note this also requires gravity vector calculations.
-// Also note that yaw/pitch/roll angles suffer from gimbal lock (for
-// more info, see: http://en.wikipedia.org/wiki/Gimbal_lock)
- #define OUTPUT_READABLE_YAWPITCHROLL
-
-// uncomment "OUTPUT_READABLE_REALACCEL" if you want to see acceleration
-// components with gravity removed. This acceleration reference frame is
-// not compensated for orientation, so +X is always +X according to the
-// sensor, just without the effects of gravity. If you want acceleration
-// compensated for orientation, us OUTPUT_READABLE_WORLDACCEL instead.
-//#define OUTPUT_READABLE_REALACCEL
-
-// uncomment "OUTPUT_READABLE_WORLDACCEL" if you want to see acceleration
-// components with gravity removed and adjusted for the world frame of
-// reference (yaw is relative to initial orientation, since no magnetometer
-// is present in this case). Could be quite handy in some cases.
-// #define OUTPUT_READABLE_WORLDACCEL
-
-
-#define LED_PIN 3 // LED Indicator pin
-#define BUTTON_INTERRUPT 2
-#define SD_CS_PIN 10
 #define TCAADDR 0x70 // Defines the MUX address
-#define MAX_NUM_IMUS 7 // Defines the total number of IMUS connected to the MUX
-bool blinkState = false;
-bool calibrate_IMUs = false;
-float userGyroOffset[MAX_NUM_IMUS][3];
+#define NUM_IMUS 7 // Defines the total number of IMUS connected to the MUX
+
+bool blinkState[2] = {false, false};
+bool calibrate_Data = false;
+bool calibrated_Data = false;
+
 unsigned long timer = 0;
 const uint8_t PWMVal = 20;
 
-SentralMM sentral[MAX_NUM_IMUS];
+SentralMM sentral[NUM_IMUS];
 // Sentral control/status vars
-bool* SentralReady = new bool[MAX_NUM_IMUS];
-uint8_t* devStatus = new uint8_t[MAX_NUM_IMUS];      // return status after each device operation (0 = success, !0 = error)
+bool* sentralReady = new bool[NUM_IMUS];
+uint8_t* devStatus = new uint8_t[NUM_IMUS];      // return status after each device operation (0 = success, !0 = error)
 uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
-uint16_t* fifoCount = new uint16_t[MAX_NUM_IMUS]; // Define containers in form of arrays to recieve fifo count from gyro fifo register;     // count of all bytes currently in FIFO
-uint8_t fifoBuffer[64]; // FIFO storage buffer
-int eepromAddress; // Calibration offsets from the eeprom are going to be stored here.
+uint16_t* fifoCount = new uint16_t[NUM_IMUS]; // Define containers in form of arrays to recieve fifo count from gyro fifo register;     // count of all bytes currently in FIFO
+uint8_t sentralErr[NUM_IMUS] = {0, 0, 0, 0, 0, 0, 0}; // FIFO storage buffer
+int eepromAddress = 0; // Calibration offsets from the eeprom are going to be stored here.
+double waitTimer[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
+uint8_t magRate = 20;
+uint8_t accelRate = 2;
+uint8_t gyroRate = 2;
+uint8_t quatDivisor = 1;
 
 // orientation/motion vars
-Quaternion q[MAX_NUM_IMUS];           // [w, x, y, z]         quaternion container
-VectorInt16 aa;         // [x, y, z]            accel sensor measurements
-VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
-VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measurements
-VectorFloat gravity;    // [x, y, z]            gravity vector
+Quaternion sentral_q[NUM_IMUS];    // [w, x, y, z] Sentral orien wrt World - quaternion container from sensors starting from sentral A -> sentral G
+Quaternion initial_q[NUM_IMUS];    // [w, x, y, z] Initial joint orien wrt World - quaternion container for inital joint orientations from unity model starting from Joint A -> Joint G
+Quaternion s2j_q[NUM_IMUS];        // [w, x, y, z] Sensor Value wrt Joint - quaternion container for relationship orientations of sentral quats to joint quats [S2J quats]
+//e.g elbow IMU wrt elbow joint) from  A -> G
+Quaternion joint_q[NUM_IMUS];      // [w, x, y, z] Joint orien wrt World - quaternion container for Final joint orientations from unity model starting from Joint A -> Joint G
 
-#ifdef OUTPUT_READABLE_EULER
-float euler[3]; // [psi, theta, phi]    Euler angle container
-#endif
-#ifdef OUTPUT_READABLE_YAWPITCHROLL
+
 float ypr[3]; // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
-#endif
+
 
 /******************************FUNCTION DEFINITION****************************/
 
-void collectData(SentralMM gy, int i);
 void tcaselect(uint8_t i);
+void setupSensor(int i);
+void troubleshoot_Err(int i);
+void calibrateData();
+void checkINT0();
+void checkINT1();
+void checkINT2();
+void checkINT3();
+void checkINT4();
+void checkINT5();
+void checkINT6();
+
 
 
 // ================================================================
@@ -90,27 +92,35 @@ void setup()
 {
   long tStart = millis();
   // #############----------- PINMODES ---------->>>>
-  pinMode(LED_PIN, OUTPUT);
-  pinMode(BUTTON_INTERRUPT, INPUT);
-  
+  pinMode(LED1_PIN, OUTPUT);
+  pinMode(BUTTON_INT, INPUT);
+
   // <<<<------- PINMODES END --------------
 
-  analogWrite(LED_PIN, (blinkState * PWMVal) ); 
-  
+  analogWrite(LED1_PIN, (blinkState[0] * PWMVal) );
+
   // join I2C bus (I2Cdev library doesn't do this automatically)
   Wire.begin();
   Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 
-// ########## Begins Wifi module protocol if Transmit is defined
+  // ########## Begins Wifi module protocol if Transmit is defined
 
-// Displays extra info through wifi module to Debug the code
+  // Displays extra info through wifi module to Debug the code
 #ifdef DEBUG_CODE
   Serial.begin(115200);
   while (!Serial); // wait for Arduino serial to be ready
-#endif 
+#endif
 
   // ##############----------- INTERRUPT ATTACH ------------------->
-  attachInterrupt(digitalPinToInterrupt(BUTTON_INTERRUPT), calibrate_IMUs, FALLING);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_INT), calibrateData, FALLING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL0_INT), checkINT0, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL1_INT), checkINT1, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL2_INT), checkINT2, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL3_INT), checkINT3, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL4_INT), checkINT4, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL5_INT), checkINT5, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL6_INT), checkINT6, RISING);
+
 
   // <------------ INTERRUPT ATTACH END --------------
 
@@ -119,57 +129,23 @@ void setup()
 
   // <---------- Done getting Time and date --------------
 
-  
+
   // Ensure 3 second wait for configuration file to be written to the Sentral from Sensor-Embedded EEPROM
-  while(millis() - tStart < 3000){} 
-  
+  while (millis() - tStart < 3000) {}
 
-  for (uint8_t i = 0; i < MAX_NUM_IMUS; i++)
+
+  for (uint8_t i = 0; i < NUM_IMUS; i++)
   {
-    userGyroOffset[i][0] = 0.0; userGyroOffset[i][1] = 0.0; userGyroOffset[i][2] = 0.0;
-    
     tcaselect(i);
-    SentralReady[i] = false;
+    setupSensor(i);
 
-    // initialize device
-    uint8_t init_val = sentral[i].initialize();
-
-    // Check to see if there was an error in initialization
-    if(init_val != 0){
-      #ifdef DEBUG_CODE
-      while(1){
-        Serial.print("Failed to Initialize sensor ");
-        Serial.print((char)(i + 65));
-        Serial.print(" . Error Value is: ");
-        Serial.println(ini_val);
-      }
-      #endif
-    }else{ sentralReady[i] = true; }
-
-    sentral[i].setSensorRates( 20, 2, 2);
-    //sentral[i].setQRateDivisor(1); //Not necessary, default value causes Qrate = GRate 
-
-    // Returns to Normal Operations and enables Scaled Sensor Data and Quaternion in NED convention
-    // Not Neccessary since does the above by default
-    //sentral[i].setAlgControl(0x00);
-
-    sentral[i].setErrorIntEvent(true);
-    sentral[i].setNormalState(true);
-  
-    // This loop gets the gyro & accel offsets (3 values each)
-    int offsetContainer[6];
-    eepromAddress = 12 * i + 15;
-    for (int xVal = 0; xVal < 6; xVal++)
-    {
-      EEPROM.get(eepromAddress, offsetContainer[xVal]);
-      //Serial.print("Addr-");
-      //Serial.print(eepromAddress);
-      //Serial.print("\tValue: ");
-      //Serial.println(offsetContainer[xVal]);
-      eepromAddress += sizeof(int);
-    }
+    // This loop gets initial quaternion of the model on unity that corresponds to the users T-Pose
+    EEPROM.get(eepromAddress, initial_q[i].w); eepromAddress += 4;
+    EEPROM.get(eepromAddress, initial_q[i].x); eepromAddress += 4;
+    EEPROM.get(eepromAddress, initial_q[i].y); eepromAddress += 4;
+    EEPROM.get(eepromAddress, initial_q[i].z); eepromAddress += 4;
   }
-  
+
   timer = millis();
 }
 
@@ -180,326 +156,261 @@ void setup()
 
 void loop()
 {
-  if(calibrate_IMUs)
+  if (calibrate_Data)
   {
-    calibrate_IMUs2User();
+    calibrateData();
   }
   else
   {
-    // blink LED to indicate activity
-      blinkState = !blinkState;
-      analogWrite(LED_PIN, (blinkState * PWMVal) ); 
-      
+    if (calibrated_Data == true)
+    {
+      // blink LED to indicate activity
+      blinkState[0] = !blinkState[0];
+      analogWrite(LED1_PIN, (blinkState[0] * PWMVal) );
+
       unsigned long currTime = millis();
-      
-      #ifdef WRITE_TO_SERIALPORT
-        //File sdFile;
-        Serial.print(millis() - timer);
-        Serial.print('/');
-      #endif
 
-      #ifdef WRITE_TO_CLOUD
-
-      #endif
-    
-      for (uint8_t i = 0; i < MAX_NUM_IMUS; i++)
+      for (uint8_t i = 0; i < NUM_IMUS; i++)
       {
         tcaselect(i);
-        collectData(sdFile, i);
-    
-        if (i < MAX_NUM_IMUS - 1)
+
+        if (sentralErr[i] == 1)
         {
-          #ifdef WRITE_TO_SERIALPORT
-                Serial.print('/');
-          #endif
-          
-          #ifdef WRITE_TO_CLOUD
-                sdFile.print('/');
-          #endif
+          troubleshoot_Err(i);
+          sentralErr[i] = 0;
+          break;
+        }
+
+        // if programming failed, don't try to do anything
+        if (!sentralReady[i])return;
+
+        uint8_t eventStatus = sentral[i].getIntStatus();
+
+        if ((eventStatus & 0x01) == 1) //If there's an error status, restart the sentral
+        {
+          sentral[i].restartSentral();
+          delay(100);
+          eventStatus = sentral[i].getIntStatus();
+          break;
+        } else if ((eventStatus & 0x02) == 1)
+        {
+          sentral[i].getQuat(&sentral_q[i]);
+          joint_q[i] = s2j_q[i].getProduct(sentral_q[i]); // This line gets the true rotations of the joints based on the relationship with initial orien and sentral orien
+        } else
+        {
+          break;
         }
       }
-    
-      #ifdef WRITE_TO_SERIALPORT
-        Serial.println();
-      #endif
+
       
-      #ifdef WRITE_TO_CLOUD
-        sdFile.println();
-        sdFile.close();
-      #endif
-    
-      if( ( millis() - currTime) < 50)
+
+      // Send Data every 50 millisecond through WIFI
+      if ((millis() - waitTimer[1]) > 50)
       {
-        unsigned long t = millis();
-        while( (t - currTime) < 50)
-        
-        {
-          t = millis();
-        }
+
+        waitTimer[1] = millis();
       }
-    
-      if((millis() - timer) > 120000)
+
+      if ((millis() - timer) > 120000)
       {
-        analogWrite(LED_PIN, PWMVal ); 
-        while(1){}
+        analogWrite(LED1_PIN, PWMVal );
+        while (1) {}
       }
+
+    }
+
   }
-  
 }
 
 
-// ================================================================
-// ===                    Function Definitions                  ===
-// ================================================================
+  // ================================================================
+  // ===                    Function Definitions                  ===
+  // ================================================================
 
-/* Data Acquisition functinn for the gyros
-  @Param i - Multiplexer (TCA) Port
-*/
-void collectData(int i)
-{
-
-  // if programming failed, don't try to do anything
-  if (!SentralReady[i])return;
-  
-  fifoCount[i] = sentral[i].getFIFOCount();
-
-  // wait for correct available data length, should be a VERY short wait
-  while (fifoCount[i] < packetSize)
-    fifoCount[i] = sentral[i].getFIFOCount();
-
-  // read a packet from FIFO
-  sentral[i].getFIFOBytes(fifoBuffer, packetSize);
-
-  // track FIFO count here in case there is > 1 packet available
-  // (this lets us immediately read more without waiting for an interrupt)
-  fifoCount[i] -= packetSize;
-
-  #ifdef WRITE_TO_SERIALPORT
-      Serial.print((char)(i + 65));
-      Serial.print('|');
-  #endif
-  
-  #ifdef WRITE_TO_CLOUD
-      sdFile.print((char)(i + 65));
-      sdFile.print('|');
-  #endif
-  
-  #ifdef OUTPUT_READABLE_EULER
-      // display Euler angles in degrees
-      sentral[i].dmpGetQuaternion(&q, fifoBuffer);
-      sentral[i].dmpGetEuler(euler, &q);
-  
-    #ifdef WRITE_TO_SERIALPORT
-        Serial.print((euler[2] * 180 / M_PI) - (userGyroOffset[i][2] * 180 / M_PI)); // Y on gy-521
-        Serial.print("|");
-        Serial.print((euler[1] * 180 / M_PI) - (userGyroOffset[i][1] * 180 / M_PI)); // X on gy-521
-        Serial.print("|");
-        Serial.print((euler[0] * 180 / M_PI) - (userGyroOffset[i][0] * 180 / M_PI));
-        Serial.print("|");
-    #endif
-    
-    #ifdef WRITE_TO_CLOUD
-        sdFile.print((euler[2]- userGyroOffset[i][2]) * 180 / M_PI);
-        sdFile.print("|");
-        sdFile.print((euler[1] - userGyroOffset[i][1]) * 180 / M_PI);
-        sdFile.print("|");
-        sdFile.print((euler[0] - userGyroOffset[i][0]) * 180 / M_PI);
-        //sdFile.print("|");
-    #endif
-  #endif
-  
-  #ifdef OUTPUT_READABLE_YAWPITCHROLL
-      // display Euler angles in degrees
-      sentral[i].dmpGetQuaternion(&q, fifoBuffer);
-      sentral[i].dmpGetGravity(&gravity, &q);
-      sentral[i].dmpGetYawPitchRoll(ypr, &q, &gravity);
-  
-    #ifdef WRITE_TO_SERIALPORT
-        Serial.print((ypr[1] - userGyroOffset[i][1]) * -180 / M_PI);
-        Serial.print("|");
-        Serial.print((ypr[2] - userGyroOffset[i][2]) * 180 / M_PI);
-        Serial.print("|");
-        Serial.print((ypr[0] - userGyroOffset[i][0]) * -180 / M_PI);
-        Serial.print("|");
-    #endif
-    
-    #ifdef WRITE_TO_CLOUD
-        sdFile.print((ypr[1] - userGyroOffset[i][1]) * -180 / M_PI);
-        sdFile.print("|");
-        sdFile.print((ypr[0] - userGyroOffset[i][0]) * -180 / M_PI);
-        sdFile.print("|");
-        sdFile.print((ypr[2] - userGyroOffset[i][2]) * 180 / M_PI);
-        //sdFile.print("|");
-    #endif
-  #endif
-  
-  #ifdef OUTPUT_READABLE_REALACCEL
-      // display real acceleration, adjusted to remove gravity
-      sentral[i].dmpGetQuaternion(&q, fifoBuffer);
-      sentral[i].dmpGetAccel(&aa, fifoBuffer);
-      sentral[i].dmpGetGravity(&gravity, &q);
-      sentral[i].dmpGetLinearAccel(&aaReal, &aa, &gravity);
-  
-    #ifdef WRITE_TO_SERIALPORT
-        Serial.print(aaReal.y * (981.0 / 16384.0), 2); // prints acceleration in y dir, converted from Gs to cm/s^2 and to 2 decimal places
-        Serial.print("|");
-        Serial.print(aaReal.z * (981.0 / 16384.0), 2); // prints acceleration in z dir, converted from Gs to cm/s^2 and to 2 decimal places
-        Serial.print("|");
-        Serial.print(aaReal.x * (981.0 / 16384.0), 2); // prints acceleration in x dir, converted from Gs to cm/s^2 and to 2 decimal places
-    #endif
-    
-    #ifdef WRITE_TO_CLOUD
-        sdFile.print(aaReal.y * (981.0 / 16384.0), 2); // prints acceleration in y dir, converted from Gs to cm/s^2 and to 2 decimal places
-        sdFile.print("|");
-        sdFile.print(aaReal.z * (981.0 / 16384.0), 2); // prints acceleration in z dir, converted from Gs to cm/s^2 and to 2 decimal places
-        sdFile.print("|");
-        sdFile.print(aaReal.x * (981.0 / 16384.0), 2); // prints acceleration in x dir, converted from Gs to cm/s^2 and to 2 decimal places
-    #endif
-  
-  #endif
-    
-  #ifdef OUTPUT_READABLE_WORLDACCEL
-      // display initial world-frame acceleration, adjusted to remove gravity
-      // and rotated based on known orientation from quaternion
-      sentral[i].dmpGetQuaternion(&q, fifoBuffer);
-      sentral[i].dmpGetAccel(&aa, fifoBuffer);
-      sentral[i].dmpGetGravity(&gravity, &q);
-      sentral[i].dmpGetLinearAccel(&aaReal, &aa, &gravity);
-      sentral[i].dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-  
-    #ifdef WRITE_TO_SERIALPORT
-        Serial.print(aaWorld.y * (981.0 / 16384.0), 2); // prints acceleration in y dir, converted from Gs to cm/s^2 and to 2 decimal places
-        Serial.print("|");
-        Serial.print(aaWorld.z * (981.0 / 16384.0), 2); // prints acceleration in z dir, converted from Gs to cm/s^2 and to 2 decimal places
-        Serial.print("|");
-        Serial.print(aaWorld.x * (981.0 / 16384.0), 2); // prints acceleration in x dir, converted from Gs to cm/s^2 and to 2 decimal places
-    #endif
-    
-    #ifdef WRITE_TO_CLOUD
-        sdFile.print(aaWorld.y * (981.0 / 16384.0), 2); // prints acceleration in y dir, converted from Gs to cm/s^2 and to 2 decimal places
-        sdFile.print("|");
-        sdFile.print(aaWorld.z * (981.0 / 16384.0), 2); // prints acceleration in z dir, converted from Gs to cm/s^2 and to 2 decimal places
-        sdFile.print("|");
-        sdFile.print(aaWorld.x * (981.0 / 16384.0), 2); // prints acceleration in x dir, converted from Gs to cm/s^2 and to 2 decimal places
-    #endif
-    
-  #endif
-
-  // get current FIFO count
-  fifoCount[i] = sentral[i].getFIFOCount();
-    
-  if (fifoCount[i] >= 966 )
+  void setupSensor(int i)
   {
-    // reset so we can continue cleanly
-    sentral[i].resetFIFO();
-      #ifdef WRITE_TO_SERIALPORT
-            Serial.print("  I: "); Serial.print(i);  Serial.println(": FIFO Overflow  ");
-      #endif
-      
-//      #ifdef WRITE_TO_CLOUD
-//        sdFile.print("  I: "); sdFile.print(i);  sdFile.println(": FIFO Overflow  ");     
-//      #endif
+    tcaselect(i);
+
+    sentralReady[i] = false;
+
+    // initialize device
+    uint8_t init_val = sentral[i].initialize();
+
+    // Check to see if there was an error in initialization
+    if (init_val != 0) {
+#ifdef DEBUG_CODE
+      while (1) {
+        Serial.print("Failed to Initialize sensor ");
+        Serial.print((char)(i + 65));
+        Serial.print(" . Error Value is: ");
+        Serial.println(ini_val);
+      }
+#endif
+    } else {
+      sentralReady[i] = true;
+    }
+
+    sentral[i].setSensorRates(magRate, accelRate, gyroRate);
+    //sentral[i].setQRateDivisor(quatDivisor); //Not necessary, default value causes Qrate = GRate
+
+    // Returns to Normal Operations and enables Scaled Sensor Data and Quaternion in NED convention
+    // Not Neccessary since does the above by default
+    //sentral[i].setAlgControl(0x00);
+
+    sentral[i].setErrorIntEvent(true);
+    sentral[i].setNormalState(true);
+    delay(100);
   }
 
-}
+  void tcaselect(uint8_t i)
+  {
+    if (i > NUM_IMUS - 1) return;
 
-void tcaselect(uint8_t i)
-{
-  if (i > MAX_NUM_IMUS - 1) return;
-
-  Wire.beginTransmission(TCAADDR);
-  Wire.write(1 << i);
-  Wire.endTransmission();
-}
+    Wire.beginTransmission(TCAADDR);
+    Wire.write(1 << i);
+    Wire.endTransmission();
+  }
 
 
-void calibrate_IMUs()
-{
-  calibrate_IMUs = true;
-}
+  void calibrateData()
+  {
+    calibrate_Data = true;
+  }
+
+  void checkINT0() {
+    sentralErr[0] = 1;
+  }
+  void checkINT1() {
+    sentralErr[1] = 1;
+  }
+  void checkINT2() {
+    sentralErr[2] = 1;
+  }
+  void checkINT3() {
+    sentralErr[3] = 1;
+  }
+  void checkINT4() {
+    sentralErr[4] = 1;
+  }
+  void checkINT5() {
+    sentralErr[5] = 1;
+  }
+  void checkINT6() {
+    sentralErr[6] = 1;
+  }
 
 
-void calibrate_IMUs2User()
-{
-    analogWrite(LED_PIN, 0 ); 
- 
-  uint8_t sampleQty = 5;
-  float data[3];
+  void calData2User()
+  {
+    uint8_t sampleQty = 5;
 
-   for(uint8_t i = 0; i < MAX_NUM_IMUS; i++)
-   {
-      //if (!SentralReady[i])return;
+    Quaternion q_Cum[NUM_IMUS];
+    Quaternion q_Avg[NUM_IMUS];
 
-      userGyroOffset[i][0] = 0.0; userGyroOffset[i][1] = 0.0; userGyroOffset[i][2] = 0.0;
-      
+    for (uint8_t i = 0; i < NUM_IMUS; i++)
+    {
+      Quaternion q[sampleQty];
       for (uint8_t s = 0; s < sampleQty; s++)
       {
-        tcaselect(i);
-
-    // if programming failed, don't try to do anything
-      if (!SentralReady[i])return;
-      
-      fifoCount[i] = sentral[i].getFIFOCount();
-    
-      // wait for correct available data length, should be a VERY short wait
-      while (fifoCount[i] < packetSize)
-        fifoCount[i] = sentral[i].getFIFOCount();
-    
-      // read a packet from FIFO
-      sentral[i].getFIFOBytes(fifoBuffer, packetSize);
-    
-      // track FIFO count here in case there is > 1 packet available
-      // (this lets us immediately read more without waiting for an interrupt)
-      fifoCount[i] -= packetSize;
-
-        
-        #ifdef OUTPUT_READABLE_EULER
-            sentral[i].dmpGetQuaternion(&q, fifoBuffer);
-            sentral[i].dmpGetEuler(data, &q);
-        #endif
-        
-        #ifdef OUTPUT_READABLE_YAWPITCHROLL             
-            sentral[i].dmpGetQuaternion(&q, fifoBuffer);
-            sentral[i].dmpGetGravity(&gravity, &q);
-            sentral[i].dmpGetYawPitchRoll(data, &q, &gravity);
-            
-//          Serial.print("Data [");Serial.print(i); Serial.print("][1]:  ");
-//          Serial.println(data[1]* 180 / M_PI);
-//          Serial.print("Data [");Serial.print(i); Serial.print("][2]:  ");
-//          Serial.println(data[2]* 180 / M_PI);
-//          Serial.print("Data [");Serial.print(i); Serial.print("][0]:  ");
-//          Serial.println(data[0]* 180 / M_PI);
-//          Serial.println();
-        #endif
-        
-        for(uint8_t j = 0; j < 3; j++)
+        if ((millis() - waitTimer[0]) > 50)
         {
-          userGyroOffset[i][j] += data[j];
+          tcaselect(i);
+
+          // if programming failed, don't try to do anything
+          if (!sentralReady[i])return;
+          uint8_t eventStatus = sentral[i].getIntStatus();
+
+          if ((eventStatus & 0x01) == 1)
+          {
+            sentral[i].restartSentral();
+            delay(100);
+            setupSensor(i);
+            eventStatus = sentral[i].getIntStatus();
+            s--; break;
+          } else if ((eventStatus & 0x02) == 1)
+          {
+            sentral[i].getQuat(&q[s]);
+          } else
+          {
+            s--;
+            break;
+          }
+
+          if (sampleQty >= 2)
+          {
+            // Finds the average of the quaternions for each sensor
+            q_Avg[i] = averageQuat(&q_Cum[i], q[s], q[0], s + 1);
+          }
+          else
+          {
+            q_Avg[i] = q[s];
+          }
+          waitTimer[0] = millis();
         }
       }
-      
-      for(uint8_t j = 0; j < 3; j++)
-      {
-        userGyroOffset[i][j] /= sampleQty;
-      }
-  
-          Serial.print("Offset [");Serial.print(i); Serial.print("][1]:  ");
-          Serial.println(userGyroOffset[i][1]* 180 / M_PI);
-          Serial.print("Offset [");Serial.print(i); Serial.print("][2]:  ");
-          Serial.println(userGyroOffset[i][2]* 180 / M_PI);
-          Serial.print("Offset [");Serial.print(i); Serial.print("][0]:  ");
-          Serial.println(userGyroOffset[i][0]* 180 / M_PI);
-          Serial.println();
-   
-   }
+
+      s2j_q[i] = calcS2JQuat(initial_q[i], q_Avg[i]);
+
+    }
+    timer = millis();
+    calibrate_Data = false;
+  }
+
+  void troubleshoot_Err(int i)
+  {
+    if (sentral[i].getResetStatus() == 1)
+    {
+#ifdef DEBUG_CODE
+      Serial.println("\n****ERROR: Sentral Configuration File Needs Uploading! ****\n");
+#endif
+    }
+    if (sentral[i].getEEUploadErr() == 1)
+    {
+#ifdef DEBUG_CODE
+      Serial.println("\n****ERROR: Issue with uploading from EEPROM! ****\n");
+#endif
+    }
+
+    if (sentral[i].getGRate() == 0)
+    {
+#ifdef DEBUG_CODE
+      Serial.println("\n****ERROR: Gyro Data Rate is Zero! ****\n");
+#endif
+    }
+
+    if (sentral[i].getMRate() == 0)
+    {
+#ifdef DEBUG_CODE
+      Serial.println("\n****ERROR: Magnetometer Data Rate is Zero! ****\n");
+#endif
+    }
+
+    if (sentral[i].getARate() == 0)
+    {
+#ifdef DEBUG_CODE
+      Serial.println("\n****ERROR: Accelerometer Data Rate is Zero! ****\n");
+#endif
+    }
+
+#ifdef DEBUG_CODE
+    Serial.println("\n****Attempting to Restart Sensor! ****\n");
+#endif
+    sentral[i].restartSentral();
+    setupSensor(i);
+  }
 
 
-  #ifdef WRITE_TO_CLOUD  
-    SD.remove(sdFilename);
-  #endif
-  
-analogWrite(LED_PIN, PWMVal ); 
+  /* Returns the quaternion that represents the relationship between the initial joint orientation
+      and the IMU's (sentral's) orientation.
+      e.g the quat of the imu of elbow wrt elbow = initial quat wrt world (quat multiplied by) the conjugate of sentral quat wrt World
+  */
+  Quaternion calcS2JQuat(Quaternion initialQuat, Quaternion sentralQuat)
+  {
+    return initialQuat.getProduct(sentralQuat.getConjugate());
+  }
 
-  timer = millis();
-  calibrate_IMUs = false;
-}
+  float rad2deg(float rad)
+  {
+    rad * (180 / M_PI);
+  }
+
