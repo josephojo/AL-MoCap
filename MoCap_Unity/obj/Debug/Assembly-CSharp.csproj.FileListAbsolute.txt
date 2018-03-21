@@ -30,3 +30,11 @@ C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\Temp\bin\Debug\UnityEng
 C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
 C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\obj\Debug\Assembly-CSharp.dll
 C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\obj\Debug\Assembly-CSharp.pdb
+C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\Temp\bin\Debug\Firebase.App.dll
+C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\Temp\bin\Debug\Firebase.Auth.dll
+C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\Temp\bin\Debug\Firebase.Database.dll
+C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\Temp\bin\Debug\Firebase.Platform.dll
+C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\Temp\bin\Debug\Google.MiniJson.dll
+C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\Temp\bin\Debug\Google.Sharpen.dll
+C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\Temp\bin\Debug\Unity.Compat.dll
+C:\Users\100520035\Documents\GitHub\AL-MoCap\MoCap_Unity\Temp\bin\Debug\Unity.Tasks.dll
