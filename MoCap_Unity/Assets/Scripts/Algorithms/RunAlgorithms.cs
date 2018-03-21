@@ -205,24 +205,30 @@ public class RunAlgorithms : MonoBehaviour
 
     void FixedUpdate()
     {
-        //Debug.Log("i: " + i);
-        //Debug.Log("Data.Count: " + DatabaseManager.Data.Count);
+        Debug.Log("i: " + i);
+        Debug.Log("k: " + k);
+        Debug.Log("Data.Count: " + DatabaseManager.Data.Count);
         //Debug.Log("Data[2].Count: " + DatabaseManager.Data[2].Count);
-        if (i >= DatabaseManager.Data.Count || DatabaseManager.DataChanged == true)
+        if (DatabaseManager.DataChanged == true) //(i >= DatabaseManager.Data.Count && DatabaseManager.DataChanged == true)
         {
-            updateRiskOcc();
-            Debug.Log("Updating!!!!");
+           
             DatabaseManager.DataChanged = false;
             data = DatabaseManager.Data;
             i = 0;
-            k = 0;// Used to keep risk calculations in sync with the incoming data. I.e. error doesn't calculate twice for every one data pt
+            k = i;// Used to keep risk calculations in sync with the incoming data. I.e. error doesn't calculate twice for every one data pt
             cummDataCount = (uint)data.Count;
 
             //Debug.Log("Time Stamps: " + DatabaseManager.DTStamp);
             //List<List<SensorData>> Quat = DatabaseManager.Data;
             //Debug.Log("Quat: " + Quat[0][0].Qw); //[0][0][0][0].Qw
         }
-        if (data.Count != 0)
+        if(i == data.Count)
+        {
+            updateRiskOcc();
+            Debug.Log("Updating!!!!");
+        }
+
+        if (data.Count != 0 && i < data.Count)
         {
             Joints[0].transform.rotation = SensData2Quat(data[i][0]);
             Joints[1].transform.rotation = SensData2Quat(data[i][1]);
@@ -238,26 +244,37 @@ public class RunAlgorithms : MonoBehaviour
             {
                 jointPos[z] = Joints[z].transform.position;
             }
-            if (k == i)
+
+            if (i  == k + 1)
             {
                 bool[] risky = new bool[3];
                 risky[0] = erm.checkBack((jointPos[2].z - jointPos[3].z) * 1000); // Compares the difference between waist location and neckish location and triggers risk when less than limit (Bending)
                 risky[1] = erm.checkElbow_L((jointPos[0].z - jointPos[1].z) * 1000); // Compares the difference between Left elbow location and Left shou (waist) location and triggers risk when less than limit (Bending)
                 risky[2] = erm.checkElbow_R((jointPos[6].z - jointPos[5].z) * 1000); // Compares the difference between shoulder location and back (waist) location and triggers risk when less than limit (Bending)
-
+                
                 if (risky[0] || risky[1] || risky[2])
                 {
-                    Debug.Log("Risky 0 : " + risky[0]);
-                    Debug.Log("Risky 1 : " + risky[1]);
-                    Debug.Log("Risky 2 : " + risky[2]);
-                    cummERMScore += erm.ERM_Risk; Debug.Log("DatabaseManager.DTStamp: " + DatabaseManager.DTStamp);
+                    //Debug.Log("Risky 0 : " + risky[0]);
+                    //Debug.Log("Risky 1 : " + risky[1]);
+                    //Debug.Log("Risky 2 : " + risky[2]);
+                    cummERMScore += erm.ERM_Risk; //Debug.Log("DatabaseManager.DTStamp: " + DatabaseManager.DTStamp);
+                    Debug.Log("Im in");
                     Dictionary<string, object> dit = new Dictionary<string, object>();
                     dit.Add("ermScore", erm.ERM_Risk);
-                    occDics.Add(DatabaseManager.DTStamp, dit);
+                    string x = ((Convert.ToInt64(DatabaseManager.DTStamp)) + (i * 50)).ToString(); //Debug.Log("DatabaseManager.DTStamp: " + x);
+                    try
+                    {
+                        occDics.Add(x, dit); // "+ (i*50)" is used to determine the approx time of the sub-captures assuming 50ms per sub-capture
+
+                    }catch(ArgumentException AE)
+                    {
+                        Debug.Log("key: " + x);
+                    }
                     //occDics[DatabaseManager.DTStamp].Add("gif", );
                 }
-                k++;
+                k = i;
             }
+            
         }
     }
 

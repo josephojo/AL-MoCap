@@ -69,108 +69,117 @@ public class DatabaseManager : MonoBehaviour
        
     }
 
+    int h = 0;
     void HandleChildAdded(object sender, ChildChangedEventArgs args)
     {
-        prev_dtStamp = dtStamp;
-        tempData.Clear();
-        if (args.DatabaseError != null)
+        //Debug.Log("h: " + h);
+        if (h > 0)
         {
-            Debug.LogError(args.DatabaseError.Message);
-            return;
-        }
-        // Do something with the data in args.Snapshot
-
-        IDictionary<string, object> iDictData;
-        List<List<SensorData>> list2 = new List<List<SensorData>>();
-        List<SensorData> list1 = new List<SensorData>();
-
-        //Debug.Log("Args.Snapshot.ChildrenCount: " + args.Snapshot.ChildrenCount);
-
-        dtStamp = args.Snapshot.Key.ToString();
-        //Debug.Log("dtStamp: " + dtStamp);
-        //Debug.Log("prevdtStamp: " + prev_dtStamp);
-
-        #region Multiple Snapshots
-
-        ////iDictDT = (IDictionary<string, object>) args.Snapshot.Value; // DateTimeStamp Level // IDictionary<string, object>
-        ////foreach (string s in iDictDT.Keys)
-        ////{
-        ////    // Gets the Key of the added snapshot converted to IDictionary. In this case, the key is the DateTimeStamp used to store sensorData on Firrebase.
-        ////    //keyDT.Add(s);
-        ////    Debug.Log("keyDT: " + s);
-        ////    listIn.Add((List<object>)iDictDT[s]); // DataCapture Level (#)
-        //Debug.Log("Parent Key: " + args.Snapshot.Key);
-        //Debug.Log("Counter: " + args.Snapshot.ChildrenCount);
-        //foreach (DataSnapshot dSnap in args.Snapshot.Children)
-        //{
-
-        //    // Gets the Key of the added snapshot converted to IDictionary. In this case, the key is the DateTimeStamp used to store sensorData on Firrebase.
-        //    //keyDT.Add(s);
-        //    iDictDT = (IDictionary<string, object>)dSnap.Value;
-        //    Debug.Log("iDictDT: " + iDictDT);
-
-        //    foreach (string s in iDictDT.Keys)
-        //    {
-        //        Debug.Log("keyDT: " + s);
-        //        //listIn.Add((List<object>)iDictDT[s]); // DataCapture Level (#)
-        //    }
-        //    //listIn.Add((List<object>)iDictDT[s]); // DataCapture Level (#)
-
-        //    //int i = 0;
-        //    //foreach (List<object> L2 in listIn)// Loop through the DataCaptures (#)
-        //    //{
-        //    //    Debug.Log("List Num: " + L2);
-        //    //    int j = 0;
-        //    //    foreach (object obj in L2)// Loop through each of the Sensors -> j
-        //    //    {
-        //    //        iDictData = (IDictionary<string, object>)obj;
-        //    //        //int k = 0;
-        //    //        foreach (IDictionary<string, object> iD_sData in iDictData.Values) //Loop through each of the Quaternion Data -> k
-        //    //        {
-        //    //            Debug.Log("sData: " + iD_sData); // iD_sData
-        //    //            Debug.Log("J: " + j);
-        //    //            SensorData sense = new SensorData(iD_sData);
-        //    //            list1.Add(sense);
-        //    //            Debug.Log("Sense: " + sense.Qw);
-        //    //            //k++;
-        //    //        }
-        //    //        list2.Add(list1);
-        //    //        j++;
-        //    //    }
-        //    //    list3.Add(list2);
-        //    //    i++;
-        //    //}
-        //    //float y;
-        //    //float.TryParse("0.256", out y);
-        //    //Debug.Log(y);
-        //    //Debug.Log("Added TempData");
-        //    //tempData.Add(list3);
-
-        //}
-        #endregion
-
-        //Debug.Log("Args.Snapshot.Key: " + args.Snapshot.Key); // Result = TimeStamp
-
-        foreach (DataSnapshot dSnap in args.Snapshot.Children) // Loops through the DataCaptures (#s)
-        {
-           // Debug.Log("dSnap.Key: " + dSnap.Key); // Result = Data Captures (#)
-
-            foreach (DataSnapshot dSnap1 in dSnap.Children) // Loops through the sensors (A-G)
+            prev_dtStamp = dtStamp;
+            tempData.Clear();
+            if (args.DatabaseError != null)
             {
-                //Debug.Log("dSnap1.Key: " + dSnap1.Key); // Result = Sensor Letter (A,B,C etc)
-                iDictData = (IDictionary<string, object>)dSnap1.Value;
-
-                //Debug.Log("iDictData[QW]: " + iDictData["qw"]);
-                SensorData sense = new SensorData(iDictData);
-                list1.Add(sense); // Letters/Data
-                //Debug.Log("Sense: " + sense.Qw);
+                Debug.LogError(args.DatabaseError.Message);
+                return;
             }
-            list2.Add(list1.GetRange(0, list1.Count)); // DataCaptures/Letters/Data
-            list1.Clear();
+            // Do something with the data in args.Snapshot
+
+            IDictionary<string, object> iDictData;
+            List<List<SensorData>> list2 = new List<List<SensorData>>();
+            List<SensorData> list1 = new List<SensorData>();
+
+            //Debug.Log("Args.Snapshot.ChildrenCount: " + args.Snapshot.ChildrenCount);
+
+            dtStamp = args.Snapshot.Key.ToString();
+            //Debug.Log("dtStamp: " + dtStamp);
+            //Debug.Log("prevdtStamp: " + prev_dtStamp);
+
+            #region Multiple Snapshots
+
+            ////iDictDT = (IDictionary<string, object>) args.Snapshot.Value; // DateTimeStamp Level // IDictionary<string, object>
+            ////foreach (string s in iDictDT.Keys)
+            ////{
+            ////    // Gets the Key of the added snapshot converted to IDictionary. In this case, the key is the DateTimeStamp used to store sensorData on Firrebase.
+            ////    //keyDT.Add(s);
+            ////    Debug.Log("keyDT: " + s);
+            ////    listIn.Add((List<object>)iDictDT[s]); // DataCapture Level (#)
+            //Debug.Log("Parent Key: " + args.Snapshot.Key);
+            //Debug.Log("Counter: " + args.Snapshot.ChildrenCount);
+            //foreach (DataSnapshot dSnap in args.Snapshot.Children)
+            //{
+
+            //    // Gets the Key of the added snapshot converted to IDictionary. In this case, the key is the DateTimeStamp used to store sensorData on Firrebase.
+            //    //keyDT.Add(s);
+            //    iDictDT = (IDictionary<string, object>)dSnap.Value;
+            //    Debug.Log("iDictDT: " + iDictDT);
+
+            //    foreach (string s in iDictDT.Keys)
+            //    {
+            //        Debug.Log("keyDT: " + s);
+            //        //listIn.Add((List<object>)iDictDT[s]); // DataCapture Level (#)
+            //    }
+            //    //listIn.Add((List<object>)iDictDT[s]); // DataCapture Level (#)
+
+            //    //int i = 0;
+            //    //foreach (List<object> L2 in listIn)// Loop through the DataCaptures (#)
+            //    //{
+            //    //    Debug.Log("List Num: " + L2);
+            //    //    int j = 0;
+            //    //    foreach (object obj in L2)// Loop through each of the Sensors -> j
+            //    //    {
+            //    //        iDictData = (IDictionary<string, object>)obj;
+            //    //        //int k = 0;
+            //    //        foreach (IDictionary<string, object> iD_sData in iDictData.Values) //Loop through each of the Quaternion Data -> k
+            //    //        {
+            //    //            Debug.Log("sData: " + iD_sData); // iD_sData
+            //    //            Debug.Log("J: " + j);
+            //    //            SensorData sense = new SensorData(iD_sData);
+            //    //            list1.Add(sense);
+            //    //            Debug.Log("Sense: " + sense.Qw);
+            //    //            //k++;
+            //    //        }
+            //    //        list2.Add(list1);
+            //    //        j++;
+            //    //    }
+            //    //    list3.Add(list2);
+            //    //    i++;
+            //    //}
+            //    //float y;
+            //    //float.TryParse("0.256", out y);
+            //    //Debug.Log(y);
+            //    //Debug.Log("Added TempData");
+            //    //tempData.Add(list3);
+
+            //}
+            #endregion
+
+            //Debug.Log("Args.Snapshot.Key: " + args.Snapshot.Key); // Result = TimeStamp
+
+            foreach (DataSnapshot dSnap in args.Snapshot.Children) // Loops through the DataCaptures (#s)
+            {
+                // Debug.Log("dSnap.Key: " + dSnap.Key); // Result = Data Captures (#)
+
+                foreach (DataSnapshot dSnap1 in dSnap.Children) // Loops through the sensors (A-G)
+                {
+                    //Debug.Log("dSnap1.Key: " + dSnap1.Key); // Result = Sensor Letter (A,B,C etc)
+                    iDictData = (IDictionary<string, object>)dSnap1.Value;
+
+                    //Debug.Log("iDictData[QW]: " + iDictData["qw"]);
+                    SensorData sense = new SensorData(iDictData);
+                    list1.Add(sense); // Letters/Data
+                                      //Debug.Log("Sense: " + sense.Qw);
+                }
+                list2.Add(list1.GetRange(0, list1.Count)); // DataCaptures/Letters/Data
+                list1.Clear();
+            }
+            tempData.AddRange(list2);
+            //Debug.Log("TempData: " + tempData[0].Count);
+            dataChanged = true;
         }
-        tempData.AddRange(list2);
-        //Debug.Log("TempData: " + tempData[0].Count);
-        dataChanged = true;
+        else
+        {
+            h++;
+        }
     }
 
     public static List<List<SensorData>> Data
@@ -185,9 +194,7 @@ public class DatabaseManager : MonoBehaviour
 
     public static string DTStamp
     {
-        get {
-            Debug.Log("dtStamp: " + dtStamp);
-            return dtStamp; }
+        get {return dtStamp; }
     }
 
     public static string prevDTStamp
