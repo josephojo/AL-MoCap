@@ -1,7 +1,6 @@
 
 
 #include "SentralMM.h"
-#include "helper_3dmath.h"
 
 /** Default constructor, uses default I2C address.
  * @see SentralMM_DEFAULT_ADDRESS
@@ -289,7 +288,10 @@ bool SentralMM::getNormalState(){
  * @return value a combination of all documented bits except CPUReset as a number (MSB first, LSB last (endianness)) -> [GyroResult, AccelResult, MagResult, QuatResult, Error]
  */
 uint8_t SentralMM::getIntStatus(){
-  I2Cdev::readBits(devAddr, SentralMM_INTERRUPT_STATUS, SentralMM_INTERRUPT_STATUS_GYRO_BIT, SentralMM_INT_STATUS_LENGTH, buffer);
+  //Serial.print("buffer[0]: "); Serial.println(buffer[0]);
+  int y = I2Cdev::readBits(devAddr, SentralMM_INTERRUPT_STATUS, SentralMM_INTERRUPT_STATUS_GYRO_BIT, SentralMM_INT_STATUS_LENGTH, buffer);
+//  Serial.print("Num of bits: "); Serial.println(y);
+//  Serial.print("buf[0]: "); Serial.println(buf[0]);
   return buffer[0];
 }
 
@@ -336,21 +338,37 @@ void SentralMM::getQuat(float* qx, float* qy, float* qz, float *qw){
  */
 void SentralMM::getQuat(Quaternion* q){
   uint8_t arrLength = 16;
-  byte buff[arrLength];
-  float arr[arrLength / 4]; // Array to store the extracted and converted values
+  uint8_t buff[arrLength];
+  uint32_t arr[arrLength / 4]; // Array to store the extracted and converted values
   uint8_t a = arrLength - 1;
   uint8_t b = 0;
-  I2Cdev::readBytes(devAddr, SentralMM_RESULT_QX_LL, arrLength, buff);
-  while(a >= 0)
-  {
-    uint32_t val = (buff[a] << 24) | (buff[a - 1] << 16) | (buff[a - 2] << 8) | buff[a - 3];
-    arr[b++] = *(float*)&val; // Converts IEEE 754 32 bit to float
-    a = a - 4;
-  }
-  q -> x = arr[0];
-  q -> y = arr[1];
-  q -> z = arr[2];
-  q -> w = arr[3];
+  //Serial.println("Getting Quats");
+  int8_t ret = I2Cdev::readBytes(devAddr, 0x00, 4, buff); //SentralMM_RESULT_QX_LL, arrLength, buff);
+  //Serial.println("Gotten Quats");
+if(ret != -1)
+{
+  //Serial.print("ret: ");Serial.println(ret);
+  arr[0] = ((buff[3] << 24) | (buff[2] << 16) | (buff[1] << 8) | buff[0]);
+//  arr[1] = ((buff[7] << 24) | (buff[6] << 16) | (buff[5] << 8) | buff[4]);
+//  arr[2] = ((buff[11] << 24) | (buff[10] << 16) | (buff[9] << 8) | buff[8]);
+//  arr[3] = ((buff[15] << 24) | (buff[14] << 16) | (buff[13] << 8) | buff[12]);
+}
+  
+//  for(; a >=0; a-=4)  {
+//    Serial.print("arrLength: ");Serial.println(arrLength);
+//    //uint32_t val = (buff[a] << 24) | (buff[a - 1] << 16) | (buff[a - 2] << 8) | buff[a - 3];
+//    //arr[b++] = *(float*)&val; // Converts IEEE 754 32 bit to float
+////    a = a - 4;
+//    //Serial.println("arrLength: ");Serial.println(arrLength);
+//    
+//  }
+
+  //Serial.print("abuff[1]: ");Serial.println(buff[1]);
+  //Serial.print("*(float*)&(arr[0]): ");Serial.println(*(float*)&(arr[0]));
+//  q -> x = *(float*)&(arr[0]);
+//  q -> y = *(float*)&(arr[1]);
+//  q -> z = *(float*)&(arr[2]);
+//  q -> w = *(float*)&(arr[3]);
 }
 
 /*Gets the quaternion values and quaternion read-time from the sensor

@@ -238,6 +238,7 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
                         Serial.print(data[count], HEX);
                         if (count + 1 < length) Serial.print(" ");
                     #endif
+                    
                 }
 
                 Wire.endTransmission();
@@ -262,6 +263,7 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
                         Serial.print(data[count], HEX);
                         if (count + 1 < length) Serial.print(" ");
                     #endif
+                    
                 }
         
                 Wire.endTransmission();
@@ -273,21 +275,32 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
             // I2C/TWI subsystem uses internal buffer that breaks with large data requests
             // so if user requests more than BUFFER_LENGTH bytes, we have to do it in
             // smaller chunks instead of all at once
+            int pz = 0;
             for (uint8_t k = 0; k < length; k += min(length, BUFFER_LENGTH)) {
+              pz++;
                 Wire.beginTransmission(devAddr);
                 Wire.write(regAddr);
                 Wire.endTransmission();
                 Wire.beginTransmission(devAddr);
                 Wire.requestFrom(devAddr, (uint8_t)min(length - k, BUFFER_LENGTH));
-        
+        Serial.print("Wire.available(): ");
+        Serial.println(Wire.available());
+        Serial.print("\t");
+        Serial.print("timeout: ");
+        Serial.println(timeout);
+        Serial.print("\t");
+        Serial.print("pz: ");
+        Serial.println(pz);
                 for (; Wire.available() && (timeout == 0 || millis() - t1 < timeout); count++) {
                     data[count] = Wire.read();
+                    Serial.println("Helooooo");
                     #ifdef I2CDEV_SERIAL_DEBUG
                         Serial.print(data[count], HEX);
                         if (count + 1 < length) Serial.print(" ");
                     #endif
+                    
                 }
-				Wire.endTransmission();
+        Wire.endTransmission();
             }
         #endif
 
@@ -305,7 +318,7 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
     #endif
 
     // check for timeout
-		if (timeout > 0 && millis() - t1 >= timeout && count < length) { count = -1; Serial.print("count= "); Serial.println(count);} // timeout
+    if (timeout > 0 && millis() - t1 >= timeout && count < length) { count = -1; Serial.print("count= "); Serial.println(count);} // timeout
 
     #ifdef I2CDEV_SERIAL_DEBUG
         Serial.print(". Done (");

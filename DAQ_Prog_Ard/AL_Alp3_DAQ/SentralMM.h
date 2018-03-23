@@ -2,9 +2,9 @@
 /*
  *  3 - 02-10-2018 - 
  *  2 - 02-10-2018 - Adapted Jeff Rowberg's MPU6050d library for the Sentral_MM (J.Ojo)
- *	1 - 06-01-2017 - Added a couple of methods, all of which as commented with "J.Ojo"
- *	0 - XX-XX-XXXX - Original Code by Jeff Rowberg
- *	# - DD-MM-YYYY - "Comments..."
+ *  1 - 06-01-2017 - Added a couple of methods, all of which as commented with "J.Ojo"
+ *  0 - XX-XX-XXXX - Original Code by Jeff Rowberg
+ *  # - DD-MM-YYYY - "Comments..."
  * --------------REVISION LOG---------------
  */
 
@@ -59,7 +59,7 @@
 #define SentralMM_EN_EVENT_INTERRUPT_MAG_BIT    3  // 1 = Magnetometer Result is available
 #define SentralMM_EN_EVENT_INTERRUPT_ACCL_BIT   4  // 1 = Accelerometer Result is available 
 #define SentralMM_EN_EVENT_INTERRUPT_GYRO_BIT   5  // 1 = Gyroscope Result is available
-#define SentralMM_EN_EVENT_LENGTH               4  // Number of bits we are using from the EN event register
+#define SentralMM_EN_EVENT_LENGTH               5  // Number of bits we are using from the EN event register
 
 // --- Normal Operation Status Registers (Read and Write)---
 #define SentralMM_HOST_CONTROL      0x34  // [0] 1 = RunEnable, 0 = Enable Initialized State (Standby State generally is preferred since enabling Initialized State resets the
@@ -72,7 +72,7 @@
 #define SentralMM_INTERRUPT_STATUS_MAG_BIT  3  // 1 = Magnetometer Result is available
 #define SentralMM_INTERRUPT_STATUS_ACCL_BIT 4  // 1 = Accelerometer Result is available 
 #define SentralMM_INTERRUPT_STATUS_GYRO_BIT 5  // 1 = Gyroscope Result is availabl
-#define SentralMM_INT_STATUS_LENGTH         4  // Number of bits we are using from the EN event reg
+#define SentralMM_INT_STATUS_LENGTH         6  // Number of bits we are using from the EN event reg
 
 #define SentralMM_ALG_STATUS        0x38  // [0] 1 = SENtral in Standby State, 0 = SENtral not in Standby State 
 
@@ -154,8 +154,8 @@
 
 class SentralMM {
     public:
-	
-		    SentralMM();
+  
+        SentralMM();
         //SentralMM(uint8_t address);
 
         uint8_t initialize(uint16_t timeout = 1000);
