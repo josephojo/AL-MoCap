@@ -9,6 +9,10 @@ public class Router : MonoBehaviour {
     private static DatabaseReference baseRef = FirebaseDatabase.DefaultInstance.RootReference;
     //private static DatabaseReference dataDateRef = FirebaseDatabase.DefaultInstance.GetReference("users/")  
 
+    private static string _eid = "-L6Iiv817U7M3HsjdMlH";
+    private static string _aid = "-L5ohOlG020TA2K3tXrg";
+
+
     public static DatabaseReference Users()
     {
         return baseRef.Child("users");
@@ -51,11 +55,11 @@ public class Router : MonoBehaviour {
     /// <summary>
     /// Provides a reference to the Occurence node on Firebase
     /// </summary>
-    /// <param name="eid"> Employee ID</param>
+    /// <param name="aid"> Assessment ID</param>
     /// <returns> Returns a reference to the Occurence node on Firebase </returns>
-    public static DatabaseReference OccurenceWithID(string eid)
+    public static DatabaseReference OccurenceWithID(string aid)
     {
-        return MainUserWithID().Child("occurences").Child(eid); // Called assignments instead of assessment in firebase database
+        return MainUserWithID().Child("occurences").Child(aid); // Called assignments instead of assessment in firebase database
     }
 
     /// <summary>
@@ -69,12 +73,14 @@ public class Router : MonoBehaviour {
 
     public static string EID
     {
-        get { return "-L6Iiv817U7M3HsjdMlH"; }
+        set { _eid = value; }
+        get { return _eid; }
     }
 
     public static string AID
     {
-        get { return "-L5ohOlG020TA2K3tXrg"; }
+        set { _aid = value; }
+        get { return _aid; }
     }
 
 }

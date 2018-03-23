@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoCap_Unity", "Assembly-CSharp.csproj", "{74A4B4DC-CBA2-2E4C-0ADD-22F50204A908}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoCap_Unity", "Assembly-CSharp-Editor.csproj", "{3566864D-AFDA-7F31-B975-438380DF2207}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{74A4B4DC-CBA2-2E4C-0ADD-22F50204A908}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74A4B4DC-CBA2-2E4C-0ADD-22F50204A908}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74A4B4DC-CBA2-2E4C-0ADD-22F50204A908}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3566864D-AFDA-7F31-B975-438380DF2207}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3566864D-AFDA-7F31-B975-438380DF2207}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3566864D-AFDA-7F31-B975-438380DF2207}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3566864D-AFDA-7F31-B975-438380DF2207}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

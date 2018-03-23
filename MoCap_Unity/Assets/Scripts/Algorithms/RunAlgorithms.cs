@@ -23,22 +23,21 @@ public class RunAlgorithms : MonoBehaviour
     int i = 1;
     int k = 1; // Used to keep risk calculations in sync with the incoming data. I.e. error doesn't calculate twice for every one data pt
 
-
-
     const int num_joints = 7;
     public GameObject[] Joints = new GameObject[num_joints];
     Vector3[] jointPos = new Vector3[num_joints];
 
     ERM erm = new ERM();
 
+    void Awake()
+    {
+       
+    }
+
     // Use this for initialization
     void Start()
     {
         timeStampDic.Add("currentTime", ServerValue.Timestamp);
-
-        #region Checks which Assessments are active and picks the employee ID of which ever one is.
-
-        #endregion
 
         #region Updates time on server and then reveiceves the value of time and prints it out (Testing)
         //Dictionary<string, object> dic = new Dictionary<string, object>();
@@ -81,6 +80,13 @@ public class RunAlgorithms : MonoBehaviour
         //    }
 
         //});
+        #endregion
+
+        #region Checks which Assessments are active and picks the employee ID of which ever one is.
+        DatabaseManager.sharedInstance.GetActiveAssessments(result =>
+        {
+            Router.AID = result[0];
+        });
         #endregion
 
         #region Pushes a set of dummy sensor Data to the server
@@ -205,10 +211,11 @@ public class RunAlgorithms : MonoBehaviour
 
     void FixedUpdate()
     {
-        Debug.Log("i: " + i);
-        Debug.Log("k: " + k);
-        Debug.Log("Data.Count: " + DatabaseManager.Data.Count);
+        //Debug.Log("i: " + i);
+        //Debug.Log("k: " + k);
+        //Debug.Log("Data.Count: " + DatabaseManager.Data.Count);
         //Debug.Log("Data[2].Count: " + DatabaseManager.Data[2].Count);
+        Debug.Log("DatabaseManager.DataChanged: " + DatabaseManager.DataChanged);
         if (DatabaseManager.DataChanged == true) //(i >= DatabaseManager.Data.Count && DatabaseManager.DataChanged == true)
         {
            
@@ -258,7 +265,7 @@ public class RunAlgorithms : MonoBehaviour
                     //Debug.Log("Risky 1 : " + risky[1]);
                     //Debug.Log("Risky 2 : " + risky[2]);
                     cummERMScore += erm.ERM_Risk; //Debug.Log("DatabaseManager.DTStamp: " + DatabaseManager.DTStamp);
-                    Debug.Log("Im in");
+                    //Debug.Log("Im in");
                     Dictionary<string, object> dit = new Dictionary<string, object>();
                     dit.Add("ermScore", erm.ERM_Risk);
                     string x = ((Convert.ToInt64(DatabaseManager.DTStamp)) + (i * 50)).ToString(); //Debug.Log("DatabaseManager.DTStamp: " + x);
@@ -268,7 +275,7 @@ public class RunAlgorithms : MonoBehaviour
 
                     }catch(ArgumentException AE)
                     {
-                        Debug.Log("key: " + x);
+                        Debug.LogError("key: " + x + " : " + AE.Message);
                     }
                     //occDics[DatabaseManager.DTStamp].Add("gif", );
                 }
@@ -330,7 +337,7 @@ public class RunAlgorithms : MonoBehaviour
                           {
                               for (int i = 0; i < 7; i++)
                               {
-                                  Router.DataWithEmpID(Router.EID).Child(str).Child(j.ToString()).Child(((char)(i + 65)).ToString()).UpdateChildrenAsync(dic2);
+                                  Router.DataWithEmpID(Router.AID).Child(str).Child(j.ToString()).Child(((char)(i + 65)).ToString()).UpdateChildrenAsync(dic2);
                               }
                           }
 
@@ -347,7 +354,7 @@ public class RunAlgorithms : MonoBehaviour
         foreach (string key in occDics.Keys)
         {
             foreach (Dictionary<string, object> occDic in occDics.Values)
-                Router.OccurenceWithID(Router.EID).Child(key).UpdateChildrenAsync(occDic).ContinueWith(task =>
+                Router.OccurenceWithID(Router.AID).Child(key).UpdateChildrenAsync(occDic).ContinueWith(task =>
                 {
                     occDics.Clear();
                 });
@@ -356,33 +363,33 @@ public class RunAlgorithms : MonoBehaviour
 
 
         #region Updates the entries associated with the risk in the Assessment node on firebase
-        //Router.AssesmentWithID(Router.AID)
-        //  .GetValueAsync().ContinueWith(task =>
-        //  {
-        //      if (task.IsFaulted)
-        //      {
-        //          // Handle the error...
-        //          Debug.Log("Error Getting File (Once)!");
-        //      }
-        //      else if (task.IsCompleted)
-        //      {
-        //          DataSnapshot snapshot = task.Result;
+        Router.AssesmentWithID(Router.AID)
+          .GetValueAsync().ContinueWith(task =>
+          {
+              if (task.IsFaulted)
+              {
+                  // Handle the error...
+                  Debug.Log("Error Getting File (Once)!");
+              }
+              else if (task.IsCompleted)
+              {
+                  DataSnapshot snapshot = task.Result;
 
-        //          // Do something with snapshot...
-        //          IDictionary<string, object> idict = (IDictionary<string, object>)snapshot.Value;
+                  // Do something with snapshot...
+                  IDictionary<string, object> idict = (IDictionary<string, object>)snapshot.Value;
 
-        //          totalOccDic.Add("totalDataCount", (Convert.ToUInt32(idict["totalDataCount"]) + cummDataCount));
-        //          totalOccDic.Add("totalErmScore", (Convert.ToUInt32(idict["totalErmScore"]) + cummERMScore));
+                  totalOccDic.Add("totalDataCount", (Convert.ToUInt32(idict["totalDataCount"]) + cummDataCount));
+                  totalOccDic.Add("totalErmScore", (Convert.ToUInt32(idict["totalErmScore"]) + cummERMScore));
 
-        //          Router.AssesmentWithID(Router.AID).UpdateChildrenAsync(totalOccDic).ContinueWith(tk =>
-        //          {
-        //              totalOccDic.Clear();
-        //              cummDataCount = 0;
-        //              cummERMScore = 0;
-        //          });
+                  Router.AssesmentWithID(Router.AID).UpdateChildrenAsync(totalOccDic).ContinueWith(tk =>
+                  {
+                      totalOccDic.Clear();
+                      cummDataCount = 0;
+                      cummERMScore = 0;
+                  });
 
-        //      }
-        //  });
+              }
+          });
         #endregion
     }
 

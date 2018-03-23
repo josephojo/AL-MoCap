@@ -32,7 +32,7 @@ public class DatabaseManager : MonoBehaviour
      *                                      
      */
     static List<List<SensorData>> tempData = new List<List<SensorData>>();
-    static string dtStamp = "A";
+    static string dtStamp = "";
     static string prev_dtStamp;
     static bool dataChanged;
 
@@ -51,8 +51,13 @@ public class DatabaseManager : MonoBehaviour
         FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://ultima-apparel.firebaseio.com/");  //("https://ultima-apparel.firebaseio.com/"); // ("https://al-test-916f1.firebaseio.com/");
         tempData.Clear();
 
-        Router.DataWithEmpID(Router.EID).LimitToLast(1).ChildAdded += HandleChildAdded;
-
+        Router.DataWithEmpID(Router.AID).LimitToLast(1).ChildAdded += HandleChildAdded;
+        //GetActiveAssessments(result =>
+        //{
+        //   // Debug.Log("Router.AID Count: " + result.Count);
+        //    Router.AID = result[0];
+        //    // Debug.Log("Router.AID: " + result[0]); // Router.AID);
+        //});
         //randomTransmissions();
 
         //auth != null // For Firebase Read and write ruless
@@ -61,12 +66,12 @@ public class DatabaseManager : MonoBehaviour
 
     void Start()
     {
-        
+
     }
 
     void Update()
     {
-       
+
     }
 
     int h = 0;
@@ -194,7 +199,7 @@ public class DatabaseManager : MonoBehaviour
 
     public static string DTStamp
     {
-        get {return dtStamp; }
+        get { return dtStamp; }
     }
 
     public static string prevDTStamp
@@ -208,11 +213,27 @@ public class DatabaseManager : MonoBehaviour
         get { return dataChanged; }
     }
 
-    public static void GetActiveAnalysis()
+    public void GetActiveAssessments(Action<List<string>> completionBlock)
     {
+        List<string> assessmentIDs = new List<string>();
+        Router.Assesment().OrderByChild("active").EqualTo(true).GetValueAsync().ContinueWith(task =>
+        {
+            DataSnapshot activeAssessSnap = task.Result;
 
+            foreach (DataSnapshot dSnap in activeAssessSnap.Children)
+            {
+                assessmentIDs.Add(dSnap.Key);
+                //Debug.Log("Active Key: " + dSnap.Key);
+                Router.AssesmentWithID(dSnap.Key).Child("employee").GetValueAsync().ContinueWith(task2 =>
+                {
+                    DataSnapshot empSnap = task2.Result;
+                    Router.EID = empSnap.Value.ToString();
+                    //Debug.Log("Emp ID: " + empSnap.Value.ToString());
+                });
+            }
+            completionBlock(assessmentIDs);
+        });
     }
-    
 
     void OnApplicationQuit()
     {
