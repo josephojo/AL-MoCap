@@ -18,35 +18,62 @@ SentralMM::SentralMM() {
 uint8_t SentralMM::initialize(uint16_t timeout) {
   
     // Read Sentral status (upload of configuration file from eeprom)
-    getSentralStatus();
+    int stat = 0;
+    stat = getSentralStatus();
+    #ifdef DEBUG_CODE
+        Serial.print("Status1: ");Serial.println(stat);
+        uint8_t eeDetect = getEEDetected();
+        Serial.print("eeDetect: ");Serial.println(eeDetect);
+        uint8_t eeUpDone = getEEUploadDone();
+        Serial.print("eeUpDone: ");Serial.println(eeUpDone);
+        uint8_t eeERR = getEEUploadErr();
+        Serial.print("eeERR: ");Serial.println(eeERR);
+     #endif
     
     // Check the Status of the configuration files upload and wait if not completed
         // Check if EEPROM was detected, if not, restart sentral
-        if(buffer[0] & 0x01 == 0)
+        if((stat & 0x01) == 0)//eeDetect == 0)
         {
+          #ifdef DEBUG_CODE 
+            Serial.println("EEPRom not detected!"); 
+          #endif
           bool b = restartSentral();
-          getSentralStatus();
-          if(buffer[0] & 0x01 == 0)
-            return buffer[0]; 
+          stat = getSentralStatus();
+          #ifdef DEBUG_CODE
+            Serial.print("Status2: ");Serial.println(stat); 
+          #endif
+          if(stat & 0x01 == 0)
+            return stat; 
         }
 
         // Check EEUploadDone bit, and wait until it equals 1 ot time runs out
         uint16_t timer = millis();
-        while(buffer[0] & 0x02 == 0)
+        
+        while((stat & 0x02) == 0) //eeUpDone == 0)
         {
-          getSentralStatus();
+          #ifdef DEBUG_CODE
+            Serial.println("Not done uploading!!!");
+            eeUpDone = getEEUploadDone();
+            Serial.print("Status3: ");Serial.println(eeUpDone); 
+          #endif
+          stat = getSentralStatus();
           if((millis() - timer) > timeout)
-            return buffer[0];
+            return stat;
         }
 
         // Check EEUpload Error bit to make sure that there was no errors during upload
         // If not restart Sentral and try again
-        if(buffer[0] & 0x04 == 1)
+        if((stat & 0x04) == 0x04) //eeERR == 1)
         {
           bool b = restartSentral();
-          getSentralStatus();
-          if(buffer[0] & 0x04 == 0)
-            return buffer[0]; 
+          stat = getSentralStatus();
+          #ifdef DEBUG_CODE
+              Serial.println("Error while uploading!");
+              Serial.print("StatusErr: ");Serial.println(stat); 
+              eeERR = getEEUploadErr();
+          #endif
+          if(stat & 0x04 == 0x04) //eeERR == 1)
+            return stat; 
         }
 
     // If no error exists, returns 0
@@ -57,24 +84,36 @@ uint8_t SentralMM::initialize(uint16_t timeout) {
  * 
  */
 uint8_t SentralMM::getSentralStatus(){
-  I2Cdev::readBits(devAddr, SentralMM_SSTATUS, SentralMM_SS_EE_UPLOAD_ERR_BIT, SentralMM_SS_LENGTH, buffer);
-  return buffer[0];
+  uint8_t buff[1];
+  uint8_t x = I2Cdev::readBits(devAddr, SentralMM_SSTATUS, SentralMM_SS_EE_UPLOAD_ERR_BIT, SentralMM_SS_LENGTH, buff);
+  return buff[0];
+}
+
+/* Gets the EEProm Upload Done bit from the Sentral Status Register.
+ * @return a value 0 / 1. Where 1 means there was the configuration files have uploaded and 0 means otherwise.
+ */
+uint8_t SentralMM::getEEDetected(){
+  uint8_t buff[1];
+   I2Cdev::readBit(devAddr, SentralMM_SSTATUS, SentralMM_SS_EE_DET_BIT, buff);
+   return buff[0];
 }
 
 /* Gets the EEProm Upload Done bit from the Sentral Status Register.
  * @return a value 0 / 1. Where 1 means there was the configuration files have uploaded and 0 means otherwise.
  */
 uint8_t SentralMM::getEEUploadDone(){
-   I2Cdev::readBit(devAddr, SentralMM_SSTATUS, SentralMM_SS_EE_UPLOADED_BIT, buffer);
-   return buffer[0];
+  uint8_t buff[1];
+   I2Cdev::readBit(devAddr, SentralMM_SSTATUS, SentralMM_SS_EE_UPLOADED_BIT, buff);
+   return buff[0];
 }
 
 /* Gets the EEProm Upload Error bit from the Sentral Status Register.
  * @return a value 0 / 1. Where 1 means there was an error during the configuration files upload and 0 means otherwise.
  */
 uint8_t SentralMM::getEEUploadErr(){
-  I2Cdev::readBit(devAddr, SentralMM_SSTATUS, SentralMM_SS_EE_UPLOAD_ERR_BIT, buffer);
-   return buffer[0];
+  uint8_t buff[1];
+  I2Cdev::readBit(devAddr, SentralMM_SSTATUS, SentralMM_SS_EE_UPLOAD_ERR_BIT, buff);
+   return buff[0];
 }
 
 /* Restarts the sentral
@@ -343,15 +382,15 @@ void SentralMM::getQuat(Quaternion* q){
   uint8_t a = arrLength - 1;
   uint8_t b = 0;
   //Serial.println("Getting Quats");
-  int8_t ret = I2Cdev::readBytes(devAddr, 0x00, 4, buff); //SentralMM_RESULT_QX_LL, arrLength, buff);
+  int8_t ret = I2Cdev::readBytes(devAddr, SentralMM_RESULT_QX_LL, arrLength, buff);
   //Serial.println("Gotten Quats");
 if(ret != -1)
 {
   //Serial.print("ret: ");Serial.println(ret);
   arr[0] = ((buff[3] << 24) | (buff[2] << 16) | (buff[1] << 8) | buff[0]);
-//  arr[1] = ((buff[7] << 24) | (buff[6] << 16) | (buff[5] << 8) | buff[4]);
-//  arr[2] = ((buff[11] << 24) | (buff[10] << 16) | (buff[9] << 8) | buff[8]);
-//  arr[3] = ((buff[15] << 24) | (buff[14] << 16) | (buff[13] << 8) | buff[12]);
+  arr[1] = ((buff[7] << 24) | (buff[6] << 16) | (buff[5] << 8) | buff[4]);
+  arr[2] = ((buff[11] << 24) | (buff[10] << 16) | (buff[9] << 8) | buff[8]);
+  arr[3] = ((buff[15] << 24) | (buff[14] << 16) | (buff[13] << 8) | buff[12]);
 }
   
 //  for(; a >=0; a-=4)  {
@@ -365,10 +404,10 @@ if(ret != -1)
 
   //Serial.print("abuff[1]: ");Serial.println(buff[1]);
   //Serial.print("*(float*)&(arr[0]): ");Serial.println(*(float*)&(arr[0]));
-//  q -> x = *(float*)&(arr[0]);
-//  q -> y = *(float*)&(arr[1]);
-//  q -> z = *(float*)&(arr[2]);
-//  q -> w = *(float*)&(arr[3]);
+  q -> x = *(float*)&(arr[0]);
+  q -> y = *(float*)&(arr[1]);
+  q -> z = *(float*)&(arr[2]);
+  q -> w = *(float*)&(arr[3]);
 }
 
 /*Gets the quaternion values and quaternion read-time from the sensor

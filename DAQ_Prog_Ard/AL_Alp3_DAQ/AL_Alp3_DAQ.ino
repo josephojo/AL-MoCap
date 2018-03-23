@@ -137,9 +137,9 @@ void setup()
   for (uint8_t i = 0; i < NUM_IMUS; i++)
   {
     //tcaselect(i);
-    Serial.println(" Before Setting Up");
+    //Serial.println(" Before Setting Up");
     setupSensor(i);
-    Serial.println(" After Setting Up");
+    //Serial.println(" After Setting Up");
 
     // This loop gets initial quaternion of the model on unity that corresponds to the users T-Pose
     //    EEPROM.get(eepromAddress, initial_q[i].w); eepromAddress += 4;
@@ -165,7 +165,7 @@ void loop()
   }
   else
   {
-    if (false) //calibrated_Data == true)
+    if (true) //calibrated_Data == true)
     {
       if ((millis() - waitTimer[2]) > 500) // blink LED to indicate activity
       {
@@ -193,21 +193,27 @@ void loop()
           if (!sentralReady[i])return;
 
           uint8_t eventStatus = sentral[i].getIntStatus();
-          Serial.print("Event Status: "); Serial.println(eventStatus,DEC);
+          //Serial.print("Event Status: "); Serial.println(eventStatus,DEC);
 
           if ((eventStatus & 0x02) == 0x02) //If there's an error status, restart the sentral
           {
             sentral[i].restartSentral();
             delay(100);
-            eventStatus = sentral[i].getIntStatus();
+            //eventStatus = sentral[i].getIntStatus();
             break;
           } else if ((eventStatus & 0x04) == 0x04)
-          {Serial.println("yeye");
+          {//Serial.println("yeye");
             sentral[i].getQuat(&sentral_q[i]);
-            //Serial.println("QW:   ");Serial.println(sentral_q[i].x);
+            Serial.print("QX:   ");Serial.print(sentral_q[i].x);
+            Serial.print("\t");
+            Serial.print("QY:   ");Serial.print(sentral_q[i].y);
+            Serial.print("\t");
+            Serial.print("QZ:   ");Serial.print(sentral_q[i].z);
+            Serial.print("\t");
+            Serial.print("QW:   ");Serial.println(sentral_q[i].w);
             //joint_q[i] = s2j_q[i].getProduct(sentral_q[i]); // This line gets the true rotations of the joints based on the relationship with initial orien and sentral orien
           } else
-          { Serial.print("Event Status: "); Serial.println(eventStatus);
+          { //Serial.print("Event Status: "); Serial.println(eventStatus);
             break;
           }
         }
@@ -237,7 +243,7 @@ void setupSensor(int i)
   sentralReady[i] = false;
 
   // initialize device
-  uint8_t init_val = sentral[i].initialize();
+  uint8_t init_val = sentral[i].initialize(5000);
 
   // Check to see if there was an error in initialization
   if (init_val != 0) {

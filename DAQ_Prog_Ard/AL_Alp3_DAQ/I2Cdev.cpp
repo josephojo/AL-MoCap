@@ -103,7 +103,7 @@ I2Cdev::I2Cdev() {
 int8_t I2Cdev::readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t *data, uint16_t timeout) {
     uint8_t b;
     uint8_t count = readByte(devAddr, regAddr, &b, timeout);
-    *data = b & (1 << bitNum);
+    *data = (b & (1 << bitNum)) >> bitNum;
     return count;
 }
 
@@ -277,23 +277,23 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
             // smaller chunks instead of all at once
             int pz = 0;
             for (uint8_t k = 0; k < length; k += min(length, BUFFER_LENGTH)) {
-              pz++;
                 Wire.beginTransmission(devAddr);
                 Wire.write(regAddr);
                 Wire.endTransmission();
                 Wire.beginTransmission(devAddr);
                 Wire.requestFrom(devAddr, (uint8_t)min(length - k, BUFFER_LENGTH));
-        Serial.print("Wire.available(): ");
-        Serial.println(Wire.available());
-        Serial.print("\t");
-        Serial.print("timeout: ");
-        Serial.println(timeout);
-        Serial.print("\t");
-        Serial.print("pz: ");
-        Serial.println(pz);
+                #ifdef DEBUG_CODE
+                    Serial.print("Wire.available(): ");
+                    Serial.print(Wire.available());
+                    Serial.print("\t");
+                    Serial.print("timeout: ");
+                    Serial.println(timeout);
+                #endif
                 for (; Wire.available() && (timeout == 0 || millis() - t1 < timeout); count++) {
                     data[count] = Wire.read();
-                    Serial.println("Helooooo");
+                    #ifdef DEBUG_CODE
+                        Serial.println("Helooooo");
+                    #endif
                     #ifdef I2CDEV_SERIAL_DEBUG
                         Serial.print(data[count], HEX);
                         if (count + 1 < length) Serial.print(" ");

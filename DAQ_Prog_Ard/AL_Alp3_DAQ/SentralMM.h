@@ -22,6 +22,9 @@
 #include "I2Cdev.h"
 #include "helper_3dmath.h"
 
+#ifndef DEBUG_CODE
+   #define DEBUG_CODE
+#endif
 
 #define SentralMM_ADDRESS_AD0_LOW     0x28 //default for Sentral M&M Blue & Teal
 #define SentralMM_DEFAULT_ADDRESS     SentralMM_ADDRESS_AD0_LOW
@@ -164,6 +167,7 @@ class SentralMM {
 //        uint8_t getEEPROM();
         uint8_t getEEUploadDone();
         uint8_t getEEUploadErr();
+        uint8_t getEEDetected();
 
         // Data Rates - Gyro and Accel rates needed should be divided by 10. 
         // E.g for 200Hz, input is 20.
