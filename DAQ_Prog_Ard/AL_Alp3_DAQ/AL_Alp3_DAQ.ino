@@ -245,7 +245,7 @@ void loop()
 
             joint_q[i] = s2j_q[i].getProduct(sentral_q[i]); // This line gets the true rotations of the joints based on the relationship with initial orien and sentral orien
 
-#ifdef DEBUG_CODE
+#ifdef TRANSMIT
             Serial.print((char)(i + 65)); Serial.print(",");
             Serial.print(joint_q[i].w); Serial.print(","); //Serial.print("\t");
             Serial.print(joint_q[i].x); Serial.print(",");
