@@ -11,10 +11,10 @@
 
 
 //Uncomment "WRITE_TO_CLOUD" to print to SD card
-// #define TRANSMIT
+#define TRANSMIT
 
 //Uncomment "DEBUG_CODE" to print to SD card
-#define DEBUG_CODE
+//#define DEBUG_CODE
 
 // ########### Pin Definitions ############
 #define LED1_PIN LED_BUILTIN // LED Indicator pin
@@ -34,7 +34,7 @@
 // ########### End of Pin Definitions ############
 
 #define TCAADDR 0x70 // Defines the MUX address
-#define NUM_IMUS 3 // Defines the total number of IMUS connected to the MUX
+#define NUM_IMUS 7 // Defines the total number of IMUS connected to the MUX
 
 bool blinkState[2] = {false, false};
 bool calibrate_Data = false;
@@ -143,7 +143,7 @@ void setup()
 
   for (uint8_t i = 0; i < NUM_IMUS; i++)
   {
-    //tcaselect(i);
+    tcaselect(i);
     //Serial.println(" Before Setting Up");
     setupSensor(i);
     //Serial.println(" After Setting Up");
@@ -154,6 +154,8 @@ void setup()
     EEPROM.get(eepromAddress, initial_q[i].y); eepromAddress += 4;
     EEPROM.get(eepromAddress, initial_q[i].z); eepromAddress += 4;
 
+
+#ifdef DEBUG_CODE
     Serial.print((char)(i + 65)); Serial.print(",");
     Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
     Serial.print(initial_q[i].x); Serial.print(",");
@@ -163,6 +165,7 @@ void setup()
       Serial.print("/");
     else if (i >= NUM_IMUS - 1)
       Serial.println();
+#endif
   }
 
   timer = millis(); // Used for timing the program i.e when to stop running.
@@ -178,20 +181,20 @@ void setup()
 void loop()
 {
 
-  if (false) // calibrate_Data)
+  if (calibrate_Data)
   {
     calData2User();
   }
   else
   {
-    if (false) //calibrated_Data == true)
+    if (calibrated_Data == true)
     {
       if ((millis() - waitTimer[2]) > 500) // blink LED to indicate activity
       {
         blinkState[0] = !blinkState[0];
         blinkState[1] = !blinkState[1];
         digitalWrite(LED1_PIN, blinkState[0]);
-        digitalWrite(LED2_PIN, blinkState[1]);        
+        digitalWrite(LED2_PIN, blinkState[1]);
         waitTimer[2] = millis();
       }
 
@@ -201,7 +204,7 @@ void loop()
       { uint8_t d = 0;
         for (uint8_t i = 0; i < NUM_IMUS; i++)
         {
-          //tcaselect(i);
+          tcaselect(i);
 
           if (sentralErr[i] == 1)
           {
@@ -284,7 +287,7 @@ void loop()
 
 void setupSensor(int i)
 {
-  //tcaselect(i);
+  tcaselect(i);
 
   sentralReady[i] = false;
 
@@ -362,7 +365,7 @@ void calData2User()
   digitalWrite(LED1_PIN, blinkState[0]);
   digitalWrite(LED2_PIN, blinkState[1]);
   pause(500);
-  
+
   Quaternion q_Cum;//[NUM_IMUS];
   Quaternion q_Avg;//[NUM_IMUS];
 
@@ -373,7 +376,7 @@ void calData2User()
     for (uint8_t s = 0; s < sampleQty; s++)
     {
 
-      //tcaselect(i);
+      tcaselect(i);
       if ((millis() - waitTimer[2]) > 300) // blink LED to indicate activity
       {
         blinkState[1] = !blinkState[1];
