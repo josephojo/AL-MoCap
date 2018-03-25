@@ -2,6 +2,11 @@
 
 #include "SentralMM.h"
 
+
+//#ifndef SENTRAL_DEBUG
+//   #define SENTRAL_DEBUG
+//#endif
+
 /** Default constructor, uses default I2C address.
  * @see SentralMM_DEFAULT_ADDRESS
  */
@@ -20,7 +25,7 @@ uint8_t SentralMM::initialize(uint16_t timeout) {
     // Read Sentral status (upload of configuration file from eeprom)
     int stat = 0;
     stat = getSentralStatus();
-    #ifdef DEBUG_CODE
+    #ifdef SENTRAL_DEBUG
         Serial.print("Status1: ");Serial.println(stat);
         uint8_t eeDetect = getEEDetected();
         Serial.print("eeDetect: ");Serial.println(eeDetect);
@@ -34,12 +39,12 @@ uint8_t SentralMM::initialize(uint16_t timeout) {
         // Check if EEPROM was detected, if not, restart sentral
         if((stat & 0x01) == 0)//eeDetect == 0)
         {
-          #ifdef DEBUG_CODE 
+          #ifdef SENTRAL_DEBUG 
             Serial.println("EEPRom not detected!"); 
           #endif
           bool b = restartSentral();
           stat = getSentralStatus();
-          #ifdef DEBUG_CODE
+          #ifdef SENTRAL_DEBUG
             Serial.print("Status2: ");Serial.println(stat); 
           #endif
           if(stat & 0x01 == 0)
@@ -51,12 +56,14 @@ uint8_t SentralMM::initialize(uint16_t timeout) {
         
         while((stat & 0x02) == 0) //eeUpDone == 0)
         {
-          #ifdef DEBUG_CODE
+          stat = getSentralStatus();
+          
+          #ifdef SENTRAL_DEBUG
             Serial.println("Not done uploading!!!");
             eeUpDone = getEEUploadDone();
-            Serial.print("Status3: ");Serial.println(eeUpDone); 
+            Serial.print("Status3: ");Serial.println(stat); 
           #endif
-          stat = getSentralStatus();
+          
           if((millis() - timer) > timeout)
             return stat;
         }
@@ -67,7 +74,7 @@ uint8_t SentralMM::initialize(uint16_t timeout) {
         {
           bool b = restartSentral();
           stat = getSentralStatus();
-          #ifdef DEBUG_CODE
+          #ifdef SENTRAL_DEBUG
               Serial.println("Error while uploading!");
               Serial.print("StatusErr: ");Serial.println(stat); 
               eeERR = getEEUploadErr();

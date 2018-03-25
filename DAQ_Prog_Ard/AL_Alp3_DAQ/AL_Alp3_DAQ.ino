@@ -14,7 +14,7 @@
 // #define TRANSMIT
 
 //Uncomment "DEBUG_CODE" to print to SD card
- #define DEBUG_CODE
+#define DEBUG_CODE
 
 // ########### Pin Definitions ############
 #define LED1_PIN LED_BUILTIN // LED Indicator pin
@@ -34,26 +34,26 @@
 // ########### End of Pin Definitions ############
 
 #define TCAADDR 0x70 // Defines the MUX address
-#define NUM_IMUS 1 // Defines the total number of IMUS connected to the MUX
+#define NUM_IMUS 3 // Defines the total number of IMUS connected to the MUX
 
 bool blinkState[2] = {false, false};
 bool calibrate_Data = false;
 bool calibrated_Data = false;
+uint8_t sampleQty = 5;
 
+
+unsigned long tStart  = 0;
 unsigned long timer = 0;
 const uint8_t PWMVal = 180;
 
 SentralMM sentral[NUM_IMUS];
 // Sentral control/status vars
 bool* sentralReady = new bool[NUM_IMUS];
-uint8_t* devStatus = new uint8_t[NUM_IMUS];      // return status after each device operation (0 = success, !0 = error)
-uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
-uint16_t* fifoCount = new uint16_t[NUM_IMUS]; // Define containers in form of arrays to recieve fifo count from gyro fifo register;     // count of all bytes currently in FIFO
 uint8_t sentralErr[NUM_IMUS] = {0}; //, 0, 0, 0, 0, 0, 0}; // FIFO storage buffer
 int eepromAddress = 0; // Calibration offsets from the eeprom are going to be stored here.
 double waitTimer[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
-uint8_t magRate = 20;
-uint8_t accelRate = 2;
+uint8_t magRate = 30;
+uint8_t accelRate = 4;
 uint8_t gyroRate = 2;
 uint8_t quatDivisor = 1;
 
@@ -63,7 +63,6 @@ Quaternion initial_q[NUM_IMUS];    // [w, x, y, z] Initial joint orien wrt World
 Quaternion s2j_q[NUM_IMUS];        // [w, x, y, z] Sensor Value wrt Joint - quaternion container for relationship orientations of sentral quats to joint quats [S2J quats]
 //e.g elbow IMU wrt elbow joint) from  A -> G
 Quaternion joint_q[NUM_IMUS];      // [w, x, y, z] Joint orien wrt World - quaternion container for Final joint orientations from unity model starting from Joint A -> Joint G
-
 
 float ypr[3]; // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
@@ -90,10 +89,17 @@ void checkINT6();
 
 void setup()
 {
-  long tStart = millis();
   // #############----------- PINMODES ---------->>>>
   pinMode(LED1_PIN, OUTPUT);
+  pinMode(LED2_PIN, OUTPUT);
   pinMode(BUTTON_INT, INPUT);
+  pinMode(SENTRAL0_INT, INPUT);
+  pinMode(SENTRAL1_INT, INPUT);
+  pinMode(SENTRAL2_INT, INPUT);
+  pinMode(SENTRAL3_INT, INPUT);
+  pinMode(SENTRAL4_INT, INPUT);
+  pinMode(SENTRAL5_INT, INPUT);
+  pinMode(SENTRAL6_INT, INPUT);
 
   // <<<<------- PINMODES END --------------
 
@@ -101,7 +107,7 @@ void setup()
 
   // join I2C bus (I2Cdev library doesn't do this automatically)
   Wire.begin();
-  Wire.setClock(100000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
 
   // ########## Begins Wifi module protocol if Transmit is defined
 
@@ -127,11 +133,12 @@ void setup()
 
   // ###########----------- Get Current Time and perhaps date ------------->
 
+  tStart = millis();
   // <---------- Done getting Time and date --------------
 
 
   // Ensure 3 second wait for configuration file to be written to the Sentral from Sensor-Embedded EEPROM
-  while (millis() - tStart < 3000) {}
+  pause(3000); //while (millis()< 3000) {} //- tStart
 
 
   for (uint8_t i = 0; i < NUM_IMUS; i++)
@@ -142,13 +149,25 @@ void setup()
     //Serial.println(" After Setting Up");
 
     // This loop gets initial quaternion of the model on unity that corresponds to the users T-Pose
-    //    EEPROM.get(eepromAddress, initial_q[i].w); eepromAddress += 4;
-    //    EEPROM.get(eepromAddress, initial_q[i].x); eepromAddress += 4;
-    //    EEPROM.get(eepromAddress, initial_q[i].y); eepromAddress += 4;
-    //    EEPROM.get(eepromAddress, initial_q[i].z); eepromAddress += 4;
+    EEPROM.get(eepromAddress, initial_q[i].w); eepromAddress += 4;
+    EEPROM.get(eepromAddress, initial_q[i].x); eepromAddress += 4;
+    EEPROM.get(eepromAddress, initial_q[i].y); eepromAddress += 4;
+    EEPROM.get(eepromAddress, initial_q[i].z); eepromAddress += 4;
+
+    Serial.print((char)(i + 65)); Serial.print(",");
+    Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
+    Serial.print(initial_q[i].x); Serial.print(",");
+    Serial.print(initial_q[i].y); Serial.print(",");
+    Serial.print(initial_q[i].z);
+    if (i < NUM_IMUS - 1)
+      Serial.print("/");
+    else if (i >= NUM_IMUS - 1)
+      Serial.println();
   }
 
-  timer = millis();
+  timer = millis(); // Used for timing the program i.e when to stop running.
+  pause(500); // Allows the sensor to update first few data in registers
+  //calData2User();
 }
 
 
@@ -161,23 +180,25 @@ void loop()
 
   if (false) // calibrate_Data)
   {
-    calibrateData();
+    calData2User();
   }
   else
   {
-    if (true) //calibrated_Data == true)
+    if (false) //calibrated_Data == true)
     {
       if ((millis() - waitTimer[2]) > 500) // blink LED to indicate activity
       {
         blinkState[0] = !blinkState[0];
-        digitalWrite(LED_BUILTIN, blinkState[0]);
+        blinkState[1] = !blinkState[1];
+        digitalWrite(LED1_PIN, blinkState[0]);
+        digitalWrite(LED2_PIN, blinkState[1]);        
         waitTimer[2] = millis();
       }
-      
+
 
       // Send Data every 50 millisecond through WIFI
       if ((millis() - waitTimer[1]) > 50)
-      {
+      { uint8_t d = 0;
         for (uint8_t i = 0; i < NUM_IMUS; i++)
         {
           //tcaselect(i);
@@ -198,20 +219,44 @@ void loop()
           if ((eventStatus & 0x02) == 0x02) //If there's an error status, restart the sentral
           {
             sentral[i].restartSentral();
-            delay(100);
+            setupSensor(i);
+            pause(100);
             //eventStatus = sentral[i].getIntStatus();
             break;
           } else if ((eventStatus & 0x04) == 0x04)
-          {//Serial.println("yeye");
+          {
             sentral[i].getQuat(&sentral_q[i]);
-            Serial.print("QX:   ");Serial.print(sentral_q[i].x);
-            Serial.print("\t");
-            Serial.print("QY:   ");Serial.print(sentral_q[i].y);
-            Serial.print("\t");
-            Serial.print("QZ:   ");Serial.print(sentral_q[i].z);
-            Serial.print("\t");
-            Serial.print("QW:   ");Serial.println(sentral_q[i].w);
-            //joint_q[i] = s2j_q[i].getProduct(sentral_q[i]); // This line gets the true rotations of the joints based on the relationship with initial orien and sentral orien
+
+#ifdef DEBUG_CODE
+            //Serial.print("QW:   ");
+            Serial.print((char)(i + 65)); Serial.print(",");
+            Serial.print(sentral_q[i].w); Serial.print(","); //Serial.print("\t");
+            //Serial.print("QX:   ");
+            Serial.print(sentral_q[i].x); Serial.print(",");
+            //Serial.print("QY:   ");
+            Serial.print(sentral_q[i].y); Serial.print(",");
+            //Serial.print("QZ:   ");
+            Serial.print(sentral_q[i].z);
+            if (i < NUM_IMUS - 1)
+              Serial.print("/");
+            else if (i >= NUM_IMUS - 1)
+              Serial.println();
+#endif
+
+            joint_q[i] = s2j_q[i].getProduct(sentral_q[i]); // This line gets the true rotations of the joints based on the relationship with initial orien and sentral orien
+
+#ifdef DEBUG_CODE
+            Serial.print((char)(i + 65)); Serial.print(",");
+            Serial.print(joint_q[i].w); Serial.print(","); //Serial.print("\t");
+            Serial.print(joint_q[i].x); Serial.print(",");
+            Serial.print(joint_q[i].y); Serial.print(",");
+            Serial.print(joint_q[i].z);
+            if (i < NUM_IMUS - 1)
+              Serial.print("/");
+            else if (i >= NUM_IMUS - 1)
+              Serial.println();
+#endif
+
           } else
           { //Serial.print("Event Status: "); Serial.println(eventStatus);
             break;
@@ -222,7 +267,8 @@ void loop()
 
       if ((millis() - timer) > 120000)
       {
-        analogWrite(LED1_PIN, PWMVal );
+        digitalWrite(LED1_PIN, LOW);
+        digitalWrite(LED2_PIN, LOW);
         while (1) {}
       }
 
@@ -268,7 +314,7 @@ void setupSensor(int i)
 
   sentral[i].setErrorIntEvent(true);
   sentral[i].setNormalState(true);
-  delay(100);
+  pause(100);
 }
 
 void tcaselect(uint8_t i)
@@ -311,58 +357,144 @@ void checkINT6() {
 
 void calData2User()
 {
-  uint8_t sampleQty = 5;
-
-  Quaternion q_Cum[NUM_IMUS];
-  Quaternion q_Avg[NUM_IMUS];
+  blinkState[0] = false;
+  blinkState[1] = true;
+  digitalWrite(LED1_PIN, blinkState[0]);
+  digitalWrite(LED2_PIN, blinkState[1]);
+  pause(500);
+  
+  Quaternion q_Cum;//[NUM_IMUS];
+  Quaternion q_Avg;//[NUM_IMUS];
 
   for (uint8_t i = 0; i < NUM_IMUS; i++)
   {
+    q_Cum.w = 0.0f; // This is needed since quaternion initializes with qw = 1, but it also affects the average calculations
     Quaternion q[sampleQty];
     for (uint8_t s = 0; s < sampleQty; s++)
     {
-      if ((millis() - waitTimer[0]) > 50)
+
+      //tcaselect(i);
+      if ((millis() - waitTimer[2]) > 300) // blink LED to indicate activity
       {
-        //tcaselect(i);
-
-        // if programming failed, don't try to do anything
-        if (!sentralReady[i])return;
-        uint8_t eventStatus = sentral[i].getIntStatus();
-
-        if ((eventStatus & 0x01) == 1)
-        {
-          sentral[i].restartSentral();
-          delay(100);
-          setupSensor(i);
-          eventStatus = sentral[i].getIntStatus();
-          s--; break;
-        } else if ((eventStatus & 0x02) == 1)
-        {
-          sentral[i].getQuat(&q[s]);
-        } else
-        {
-          s--;
-          break;
-        }
-
-        if (sampleQty >= 2)
-        {
-          // Finds the average of the quaternions for each sensor
-          q_Avg[i] = averageQuat(&q_Cum[i], q[s], q[0], s + 1);
-        }
-        else
-        {
-          q_Avg[i] = q[s];
-        }
-        waitTimer[0] = millis();
+        blinkState[1] = !blinkState[1];
+        digitalWrite(LED2_PIN, blinkState[1]);
+        waitTimer[2] = millis();
       }
+
+      // if programming failed, don't try to do anything
+      if (!sentralReady[i])
+      {
+#ifdef DEBUG_CODE
+        Serial.println("User Calibration: Sentral Not Ready!");
+#endif
+        return;
+      }
+
+      uint8_t eventStatus = sentral[i].getIntStatus();
+
+      //      Serial.print("eventStatus: ");
+      //      Serial.println(eventStatus);
+
+      if ((eventStatus & 0x01) == 0x01)
+      {
+#ifdef DEBUG_CODE
+        Serial.println("User Calibration: Sentral still starting!");
+#endif
+        sentral[i].restartSentral();
+        pause(100);
+        setupSensor(i);
+        eventStatus = sentral[i].getIntStatus();
+        pause(60);
+        s--; continue;
+      }
+      else if ((eventStatus & 0x02) == 0x02) //If there's an error status, restart the sentral
+      {
+#ifdef DEBUG_CODE
+        Serial.println("User Calibration: Sentral Has Error!");
+#endif
+        sentral[i].restartSentral();
+        pause(100);
+        setupSensor(i);
+        //eventStatus = sentral[i].getIntStatus();
+        s--;
+        //pause(100);
+        pause(60);
+        continue;
+      } else if
+      ((eventStatus & 0x04) == 0x04)
+      {
+        sentral[i].getQuat(&q[s]);
+#ifdef DEBUG_CODE
+        Serial.print("QW: ");
+        Serial.print(q[s].w); Serial.print("\t");
+        Serial.print("QX: ");
+        Serial.print(q[s].x); Serial.print("\t");
+        Serial.print("QY: ");
+        Serial.print(q[s].y); Serial.print("\t");
+        Serial.print("QZ: ");
+        Serial.println(q[s].z);
+#endif
+      }
+      else
+      {
+#ifdef DEBUG_CODE
+        Serial.println("User Calibration: Some other Reason!");
+#endif
+        s--;
+        //pause(120);
+        pause(50);
+        continue;
+      }
+
+      if (sampleQty >= 2)
+      {
+        // Finds the average of the quaternions for each sensor
+        q_Avg = averageQuat(&q_Cum, q[s], q[0], s );
+      }
+      else
+      {
+        q_Avg = q[s];
+      }
+
+      waitTimer[3] = millis();
+      while (s < sampleQty - 1 && ((millis() - waitTimer[3]) < 60)) {}
     }
 
-    s2j_q[i] = calcS2JQuat(initial_q[i], q_Avg[i]);
+#ifdef DEBUG_CODE
+    Serial.print("QW_AVG:   ");
+    Serial.print(q_Avg.w); Serial.print("\t");
+    Serial.print("QX_AVG:   ");
+    Serial.print(q_Avg.x); Serial.print("\t");
+    Serial.print("QY_AVG:   ");
+    Serial.print(q_Avg.y); Serial.print("\t");
+    Serial.print("QZ_AVG:   ");
+    Serial.println(q_Avg.z);
+#endif
 
+    s2j_q[i] = calcS2JQuat(initial_q[i], q_Avg); //[i]);
+
+#ifdef DEBUG_CODE
+    Serial.print("QW_CORR: ");
+    Serial.print(s2j_q[i].w); Serial.print("\t");
+    Serial.print("QX_CORR: ");
+    Serial.print(s2j_q[i].x); Serial.print("\t");
+    Serial.print("QY_CORR: ");
+    Serial.print(s2j_q[i].y); Serial.print("\t");
+    Serial.print("QZ_CORR: ");
+    Serial.println(s2j_q[i].z);
+#endif
+
+    q_Avg.resetQuat();
   }
-  timer = millis();
+
   calibrate_Data = false;
+  blinkState[0] = true;
+  blinkState[1] = false;
+  digitalWrite(LED1_PIN, blinkState[0]);
+  digitalWrite(LED2_PIN, blinkState[1]);
+  pause(500);
+  timer = millis();
+
 }
 
 void troubleshoot_Err(int i)
@@ -408,6 +540,12 @@ void troubleshoot_Err(int i)
   setupSensor(i);
 }
 
+// Pauses in Milliseconds
+void pause(int milli)
+{
+  long timPause = millis();
+  while ((millis() - timPause) < milli) { }
+}
 
 /* Returns the quaternion that represents the relationship between the initial joint orientation
     and the IMU's (sentral's) orientation.
@@ -423,7 +561,7 @@ float rad2deg(float rad)
   rad * (180 / M_PI);
 }
 
-// ######### Stuff I Added - J.Ojo ################
+// ######### Quat Avergaing Stuff - J.Ojo ################
 float dotProduct(Quaternion q1, Quaternion q2)
 {
   return q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;
@@ -463,9 +601,9 @@ Quaternion averageQuat(Quaternion *cumulative, Quaternion newRotation, Quaternio
 
   //Before we add the new rotation to the average (mean), we have to check whether the quaternion has to be inverted. Because
   //q and -q are the same rotation, but cannot be averaged, we have to make sure they are all the same.
-  if (AreQuaternionsClose(newRotation, firstRotation)) {
+  if (!AreQuaternionsClose(newRotation, firstRotation)) {
 
-    newRotation = newRotation.flipQuatSign();
+    newRotation.flipQuatSign();
   }
 
   //Average the values
@@ -480,6 +618,6 @@ Quaternion averageQuat(Quaternion *cumulative, Quaternion newRotation, Quaternio
   z = cumulative -> z * addDet;
 
   //note: if speed is an issue, you can skip the normalization step
-  return Quaternion(x, y, z, w).getNormalized();
+  return Quaternion(w, x, y, z).getNormalized();
 }
 

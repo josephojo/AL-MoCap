@@ -48,7 +48,7 @@ THE SOFTWARE.
 #define _I2CDEV_H_
 
 
-//#define DEBUG_CODE
+//#define I2C_DEBUG_CODE
 
 
 // -----------------------------------------------------------------------------

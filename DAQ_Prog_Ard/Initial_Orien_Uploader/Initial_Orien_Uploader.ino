@@ -3,10 +3,12 @@
 
 #define IMU_QTY 7
 
+int LEDPin LED_BUILTIN;
+
 int address=0;
 
 void setup() {
-  
+  pinMode(LEDPin, OUTPUT);
   //Copy and Paste the contents of the file "Desktop\MoCap\initial_orien.txt"
   Quaternion q[IMU_QTY] = 
   {
@@ -27,6 +29,7 @@ void setup() {
     EEPROM.put(address, q[i].y); address += 4;
     EEPROM.put(address, q[i].z); address += 4;
   }
+  digitalWrite(LEDPin, HIGH);
 }
 
 void loop() {

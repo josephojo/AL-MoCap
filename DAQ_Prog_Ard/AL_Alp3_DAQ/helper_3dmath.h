@@ -89,12 +89,20 @@ class Quaternion {
     }
 
     //Changes the sign of the quaternion components. This is not the same as the inverse. Added by J.Ojo
-    Quaternion flipQuatSign() {
-      Quaternion r(-w, -x, -y, -z);
-      return r;
+    void flipQuatSign() {
+      w = -w;
+      x = -x;
+      y = -y;
+      z = -z;
     }
 
-
+    //Re-initializes the Quaternion. Added by J.Ojo
+    void resetQuat() {
+      w = 1.0f;
+      x = 0.0f;
+      y = 0.0f;
+      z = 0.0f;
+    }
 
 };
 // ################################################

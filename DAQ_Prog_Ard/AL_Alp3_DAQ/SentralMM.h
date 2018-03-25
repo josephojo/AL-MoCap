@@ -22,9 +22,6 @@
 #include "I2Cdev.h"
 #include "helper_3dmath.h"
 
-#ifndef DEBUG_CODE
-   #define DEBUG_CODE
-#endif
 
 #define SentralMM_ADDRESS_AD0_LOW     0x28 //default for Sentral M&M Blue & Teal
 #define SentralMM_DEFAULT_ADDRESS     SentralMM_ADDRESS_AD0_LOW
