@@ -34,7 +34,7 @@
 // ########### End of Pin Definitions ############
 
 #define TCAADDR 0x70 // Defines the MUX address
-#define NUM_IMUS 3 // Defines the total number of IMUS connected to the MUX
+#define NUM_IMUS 1 // Defines the total number of IMUS connected to the MUX
 
 bool blinkState[2] = {false, false};
 bool calibrate_Data = false;
@@ -184,7 +184,7 @@ void loop()
   }
   else
   {
-    if (false) //calibrated_Data == true)
+    if (true) //calibrated_Data == true)
     {
       if ((millis() - waitTimer[2]) > 500) // blink LED to indicate activity
       {
