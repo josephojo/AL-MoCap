@@ -5,6 +5,7 @@ using System;
 using Firebase;
 using Firebase.Database;
 using Firebase.Unity.Editor;
+using UTJ.FrameCapturer;
 
 
 public class RunAlgorithms : MonoBehaviour
@@ -17,6 +18,8 @@ public class RunAlgorithms : MonoBehaviour
     // Occurence Stuff
     Dictionary<string, Dictionary<string, object>> occDics = new Dictionary<string, Dictionary<string, object>>();
     Dictionary<string, object> totalOccDic = new Dictionary<string, object>();
+
+    MovieRecorder mRec = new MovieRecorder();
 
     UInt32 cummDataCount = 0;
     double cummERMScore = 0.0;
@@ -218,12 +221,14 @@ public class RunAlgorithms : MonoBehaviour
         Debug.Log("DatabaseManager.DataChanged: " + DatabaseManager.DataChanged);
         if (DatabaseManager.DataChanged == true) //(i >= DatabaseManager.Data.Count && DatabaseManager.DataChanged == true)
         {
-           
+            mRec.EndRecording();
             DatabaseManager.DataChanged = false;
             data = DatabaseManager.Data;
             i = 0;
             k = i;// Used to keep risk calculations in sync with the incoming data. I.e. error doesn't calculate twice for every one data pt
             cummDataCount = (uint)data.Count;
+
+            mRec.BeginRecording();
 
             //Debug.Log("Time Stamps: " + DatabaseManager.DTStamp);
             //List<List<SensorData>> Quat = DatabaseManager.Data;
