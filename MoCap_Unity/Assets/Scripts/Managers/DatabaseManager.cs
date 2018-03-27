@@ -51,7 +51,7 @@ public class DatabaseManager : MonoBehaviour
         FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://ultima-apparel.firebaseio.com/");  //("https://ultima-apparel.firebaseio.com/"); // ("https://al-test-916f1.firebaseio.com/");
         tempData.Clear();
 
-        Router.DataWithEmpID(Router.AID).LimitToLast(1).ChildAdded += HandleChildAdded;
+        Router.DataWithAssID(Router.AID).LimitToLast(1).ChildAdded += HandleChildAdded;
         //GetActiveAssessments(result =>
         //{
         //   // Debug.Log("Router.AID Count: " + result.Count);
@@ -187,6 +187,9 @@ public class DatabaseManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Property to return List that contains the List of each sensor(A, B, C etc) that sensorData (Quaternions - qw, qx, qy and qz) 
+    /// </summary>
     public static List<List<SensorData>> Data
     {
         get
@@ -237,7 +240,7 @@ public class DatabaseManager : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        Router.DataWithEmpID(Router.EID).LimitToLast(1).ChildAdded -= HandleChildAdded;
+        Router.DataWithAssID(Router.EID).LimitToLast(1).ChildAdded -= HandleChildAdded;
         Debug.Log("Application ending after " + Time.time + " seconds");
     }
 

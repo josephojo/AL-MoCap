@@ -193,7 +193,7 @@ Light:
   serializedVersion: 8
   m_Type: 1
   m_Color: {r: 0.862, g: 0.6421389, b: 0.648, a: 1}
-  m_Intensity: 0.91
+  m_Intensity: 0.59
   m_Range: 10
   m_SpotAngle: 30
   m_CookieSize: 10
@@ -244,7 +244,7 @@ AudioListener:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 294562663}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!124 &294562665
 Behaviour:
   m_ObjectHideFlags: 0
@@ -335,7 +335,7 @@ Light:
   serializedVersion: 8
   m_Type: 1
   m_Color: {r: 0.65828955, g: 0.6267301, b: 0.6764706, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.76
   m_Range: 10
   m_SpotAngle: 30
   m_CookieSize: 10
@@ -413,7 +413,7 @@ AudioListener:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 373842226}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!92 &373842229
 Behaviour:
   m_ObjectHideFlags: 0
@@ -574,7 +574,7 @@ AudioListener:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 589567538}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!92 &589567541
 Behaviour:
   m_ObjectHideFlags: 0

@@ -11,10 +11,10 @@
 
 
 //Uncomment "WRITE_TO_CLOUD" to print to SD card
-// #define TRANSMIT
+ #define TRANSMIT
 
 //Uncomment "DEBUG_CODE" to print to SD card
-#define DEBUG_CODE
+//#define DEBUG_CODE
 
 // ########### Pin Definitions ############
 #define LED1_PIN LED_BUILTIN // LED Indicator pin
@@ -154,6 +154,7 @@ void setup()
     EEPROM.get(eepromAddress, initial_q[i].y); eepromAddress += 4;
     EEPROM.get(eepromAddress, initial_q[i].z); eepromAddress += 4;
 
+#ifdef DEBUG_CODE
     Serial.print((char)(i + 65)); Serial.print(",");
     Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
     Serial.print(initial_q[i].x); Serial.print(",");
@@ -163,11 +164,12 @@ void setup()
       Serial.print("/");
     else if (i >= NUM_IMUS - 1)
       Serial.println();
+#endif
   }
 
   timer = millis(); // Used for timing the program i.e when to stop running.
   pause(500); // Allows the sensor to update first few data in registers
-  //calData2User();
+  calData2User();
 }
 
 
@@ -245,7 +247,7 @@ void loop()
 
             joint_q[i] = s2j_q[i].getProduct(sentral_q[i]); // This line gets the true rotations of the joints based on the relationship with initial orien and sentral orien
 
-#ifdef DEBUG_CODE
+#ifdef TRANSMIT
             Serial.print((char)(i + 65)); Serial.print(",");
             Serial.print(joint_q[i].w); Serial.print(","); //Serial.print("\t");
             Serial.print(joint_q[i].x); Serial.print(",");
@@ -265,7 +267,7 @@ void loop()
         waitTimer[1] = millis();
       }
 
-      if ((millis() - timer) > 120000)
+      if ((millis() - timer) > 60000) //120000)
       {
         digitalWrite(LED1_PIN, LOW);
         digitalWrite(LED2_PIN, LOW);

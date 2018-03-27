@@ -33,9 +33,9 @@ public class Router : MonoBehaviour {
         return MainUserWithID().Child("employees").Child(eid); // eid = "-L6Iiv817U7M3HsjdMlH"
     }
 
-    public static DatabaseReference DataWithEmpID(string eid)
+    public static DatabaseReference DataWithAssID(string aid)
     {
-        return MainUserWithID().Child("data").Child(eid);
+        return MainUserWithID().Child("data").Child(aid);
     }
 
     /// <summary>
