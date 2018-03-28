@@ -1,7 +1,7 @@
 //Communicate between ESP8266
 //Send over to firebase 
 
-#include <ESP8266WiFi.h>
+//#include <ESP8266WiFi.h>
 #include <FirebaseArduino.h>
 
 // Set these to run example.
@@ -29,6 +29,8 @@ void setup() {
 int numQuats = 0;
 int numSensors = 0;
 int numDatashot = 0;
+long timeStamp = 0;
+
 String str = "";
 void loop() {
     while(Serial.available()> 0) {
@@ -50,7 +52,7 @@ void loop() {
       }
       else if(chr == '|')
       {
-        
+        timeStamp = (long)str;
       }
       else if(chr == '\n')
       {
