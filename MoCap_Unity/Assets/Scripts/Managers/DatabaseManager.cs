@@ -31,7 +31,7 @@ public class DatabaseManager : MonoBehaviour
      *                 List of Sensors in DataCapture
      *                                      
      */
-    static List<List<SensorData>> tempData = new List<List<SensorData>>();
+    static List<SensorData> tempData = new List<SensorData>();  //List<List<SensorData>> tempData = new List<List<SensorData>>();
     static string dtStamp = "";
     static string prev_dtStamp;
     static bool dataChanged;
@@ -51,7 +51,7 @@ public class DatabaseManager : MonoBehaviour
         FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://ultima-apparel.firebaseio.com/");  //("https://ultima-apparel.firebaseio.com/"); // ("https://al-test-916f1.firebaseio.com/");
         tempData.Clear();
 
-        Router.DataWithAssID(Router.AID).LimitToLast(1).ChildAdded += HandleChildAdded;
+        Router.DataWithAssID(Router.AID).ChildAdded += HandleChildAdded; //.LimitToLast(1)
         //GetActiveAssessments(result =>
         //{
         //   // Debug.Log("Router.AID Count: " + result.Count);
@@ -77,7 +77,6 @@ public class DatabaseManager : MonoBehaviour
     int h = 0;
     void HandleChildAdded(object sender, ChildChangedEventArgs args)
     {
-        //for (int delay = 0; delay < 1E3; delay++) { }
         //Debug.Log("h: " + h);
         if (h > 0)
         {
@@ -161,11 +160,11 @@ public class DatabaseManager : MonoBehaviour
 
             Debug.Log("Args.Snapshot.Count: " + args.Snapshot.ChildrenCount); // Result = TimeStamp
 
-            foreach (DataSnapshot dSnap in args.Snapshot.Children) // Loops through the DataCaptures (#s)
-            {
+            //foreach (DataSnapshot dSnap in args.Snapshot.Children) // Loops through the DataCaptures (#s)
+            //{
                 // Debug.Log("dSnap.Key: " + dSnap.Key); // Result = Data Captures (#)
 
-                foreach (DataSnapshot dSnap1 in dSnap.Children) // Loops through the sensors (A-G)
+                foreach (DataSnapshot dSnap1 in args.Snapshot.Children) //dSnap.Children) // Loops through the sensors (A-G)
                 {
                     //Debug.Log("dSnap1.Key: " + dSnap1.Key); // Result = Sensor Letter (A,B,C etc)
                     iDictData = (IDictionary<string, object>)dSnap1.Value;
@@ -176,9 +175,10 @@ public class DatabaseManager : MonoBehaviour
                                       //Debug.Log("Sense: " + sense.Qw);
                 }
                 list2.Add(list1.GetRange(0, list1.Count)); // DataCaptures/Letters/Data
-                list1.Clear();
-            }
-            tempData.AddRange(list2);
+                //list1.Clear();
+            //}
+            tempData.AddRange(list1); //list2);
+            list1.Clear();
             //Debug.Log("TempData: " + tempData[0].Count);
             dataChanged = true;
         }
@@ -191,11 +191,11 @@ public class DatabaseManager : MonoBehaviour
     /// <summary>
     /// Property to return List that contains the List of each sensor(A, B, C etc) that sensorData (Quaternions - qw, qx, qy and qz) 
     /// </summary>
-    public static List<List<SensorData>> Data
+    public static List<SensorData> Data
     {
         get
         {
-            List<List<SensorData>> res = new List<List<SensorData>>();
+            List<SensorData> res = new List<SensorData>(); //List<List<SensorData>> res = new List<List<SensorData>>();
             res.AddRange(tempData.GetRange(0, tempData.Count));
             return res;
         }
