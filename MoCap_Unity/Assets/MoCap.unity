@@ -925,14 +925,14 @@ MonoBehaviour:
     m_leaf: C:/Users/100520035/Desktop/MoCap Gifs
     m_readOnly: 0
   m_resolution: 0
-  m_resolutionPercent: 60
+  m_resolutionPercent: 100
   m_resolutionWidth: 1920
   m_framerateMode: 1
   m_targetFramerate: 30
   m_fixDeltaTime: 1
-  m_waitDeltaTime: 1
+  m_waitDeltaTime: 0
   m_captureEveryNthFrame: 1
-  m_captureControl: 2
+  m_captureControl: 0
   m_startFrame: 0
   m_endFrame: 100
   m_startTime: 0

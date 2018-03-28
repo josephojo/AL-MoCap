@@ -77,6 +77,7 @@ public class DatabaseManager : MonoBehaviour
     int h = 0;
     void HandleChildAdded(object sender, ChildChangedEventArgs args)
     {
+        //for (int delay = 0; delay < 1E3; delay++) { }
         //Debug.Log("h: " + h);
         if (h > 0)
         {
@@ -96,7 +97,7 @@ public class DatabaseManager : MonoBehaviour
             //Debug.Log("Args.Snapshot.ChildrenCount: " + args.Snapshot.ChildrenCount);
 
             dtStamp = args.Snapshot.Key.ToString();
-            //Debug.Log("dtStamp: " + dtStamp);
+            Debug.Log("dtStamp: " + dtStamp);
             //Debug.Log("prevdtStamp: " + prev_dtStamp);
 
             #region Multiple Snapshots
@@ -158,7 +159,7 @@ public class DatabaseManager : MonoBehaviour
             //}
             #endregion
 
-            //Debug.Log("Args.Snapshot.Key: " + args.Snapshot.Key); // Result = TimeStamp
+            Debug.Log("Args.Snapshot.Count: " + args.Snapshot.ChildrenCount); // Result = TimeStamp
 
             foreach (DataSnapshot dSnap in args.Snapshot.Children) // Loops through the DataCaptures (#s)
             {
