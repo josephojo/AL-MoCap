@@ -31,7 +31,7 @@ public class DatabaseManager : MonoBehaviour
      *                 List of Sensors in DataCapture
      *                                      
      */
-    static List<List<SensorData>> tempData = new List<List<SensorData>>();
+    static List<SensorData> tempData = new List<SensorData>();  //List<List<SensorData>> tempData = new List<List<SensorData>>();
     static string dtStamp = "";
     static string prev_dtStamp;
     static bool dataChanged;
@@ -51,7 +51,7 @@ public class DatabaseManager : MonoBehaviour
         FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://ultima-apparel.firebaseio.com/");  //("https://ultima-apparel.firebaseio.com/"); // ("https://al-test-916f1.firebaseio.com/");
         tempData.Clear();
 
-        Router.DataWithEmpID(Router.AID).LimitToLast(1).ChildAdded += HandleChildAdded;
+        Router.DataWithAssID(Router.AID).ChildAdded += HandleChildAdded; //.LimitToLast(1)
         //GetActiveAssessments(result =>
         //{
         //   // Debug.Log("Router.AID Count: " + result.Count);
@@ -96,7 +96,7 @@ public class DatabaseManager : MonoBehaviour
             //Debug.Log("Args.Snapshot.ChildrenCount: " + args.Snapshot.ChildrenCount);
 
             dtStamp = args.Snapshot.Key.ToString();
-            //Debug.Log("dtStamp: " + dtStamp);
+            Debug.Log("dtStamp: " + dtStamp);
             //Debug.Log("prevdtStamp: " + prev_dtStamp);
 
             #region Multiple Snapshots
@@ -158,13 +158,13 @@ public class DatabaseManager : MonoBehaviour
             //}
             #endregion
 
-            //Debug.Log("Args.Snapshot.Key: " + args.Snapshot.Key); // Result = TimeStamp
+            Debug.Log("Args.Snapshot.Count: " + args.Snapshot.ChildrenCount); // Result = TimeStamp
 
-            foreach (DataSnapshot dSnap in args.Snapshot.Children) // Loops through the DataCaptures (#s)
-            {
+            //foreach (DataSnapshot dSnap in args.Snapshot.Children) // Loops through the DataCaptures (#s)
+            //{
                 // Debug.Log("dSnap.Key: " + dSnap.Key); // Result = Data Captures (#)
 
-                foreach (DataSnapshot dSnap1 in dSnap.Children) // Loops through the sensors (A-G)
+                foreach (DataSnapshot dSnap1 in args.Snapshot.Children) //dSnap.Children) // Loops through the sensors (A-G)
                 {
                     //Debug.Log("dSnap1.Key: " + dSnap1.Key); // Result = Sensor Letter (A,B,C etc)
                     iDictData = (IDictionary<string, object>)dSnap1.Value;
@@ -175,9 +175,10 @@ public class DatabaseManager : MonoBehaviour
                                       //Debug.Log("Sense: " + sense.Qw);
                 }
                 list2.Add(list1.GetRange(0, list1.Count)); // DataCaptures/Letters/Data
-                list1.Clear();
-            }
-            tempData.AddRange(list2);
+                //list1.Clear();
+            //}
+            tempData.AddRange(list1); //list2);
+            list1.Clear();
             //Debug.Log("TempData: " + tempData[0].Count);
             dataChanged = true;
         }
@@ -187,11 +188,14 @@ public class DatabaseManager : MonoBehaviour
         }
     }
 
-    public static List<List<SensorData>> Data
+    /// <summary>
+    /// Property to return List that contains the List of each sensor(A, B, C etc) that sensorData (Quaternions - qw, qx, qy and qz) 
+    /// </summary>
+    public static List<SensorData> Data
     {
         get
         {
-            List<List<SensorData>> res = new List<List<SensorData>>();
+            List<SensorData> res = new List<SensorData>(); //List<List<SensorData>> res = new List<List<SensorData>>();
             res.AddRange(tempData.GetRange(0, tempData.Count));
             return res;
         }
@@ -237,7 +241,7 @@ public class DatabaseManager : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        Router.DataWithEmpID(Router.EID).LimitToLast(1).ChildAdded -= HandleChildAdded;
+        Router.DataWithAssID(Router.EID).LimitToLast(1).ChildAdded -= HandleChildAdded;
         Debug.Log("Application ending after " + Time.time + " seconds");
     }
 
