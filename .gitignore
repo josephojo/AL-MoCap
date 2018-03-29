@@ -23,5 +23,5 @@ _autosave-*
 MoCap_Unity/Library/metadata/bc/bc8e8a96e0c27264a833afbce8aacbfb
 *.info
 
-MoCap_Unity/Temp/
-MoCap_Unity/Library/
+MoCap_Unity/Temp
+MoCap_Unity/Library

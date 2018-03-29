@@ -860,7 +860,7 @@ public class RunAlgorithms : MonoBehaviour
     Vector3[] jointPos = new Vector3[num_joints];
 
     ERM erm = new ERM();
-
+    Thread t;
     // Use this for initialization
     void Start()
     {
@@ -917,7 +917,11 @@ public class RunAlgorithms : MonoBehaviour
         #endregion
         Debug.Log("Started");
         #region Pushes a set of dummy sensor Data to the server
-        Task.Run(PushDummySenData);
+        t = new Thread(() =>
+        {
+            PushDummySenData();
+        });
+        t.Start();
         #endregion
 
 
@@ -1166,7 +1170,6 @@ public class RunAlgorithms : MonoBehaviour
                           int i = 0;
                           foreach (double[] dat in dummyData) //(int i = 0; i < dummyData.Length; i++)
                           {
-
                               string str = (u).ToString();
                               //Debug.LogFormat("dat[0]: {0}\t dat[1]: {1}\t dat[2]: {2}\t dat[3]: {3}", dat[0], dat[1], dat[2], dat[3]);
                               dic2.Add("qw", dat[0]); dic2.Add("qx", dat[1]); dic2.Add("qy", dat[2]); dic2.Add("qz", dat[3]);
@@ -1176,11 +1179,11 @@ public class RunAlgorithms : MonoBehaviour
                               dic2.Clear();
                               u += 50;
                               i++;
-                              if (i == 100)
-                              {
-                                  Thread.Sleep(2000);
-                                  i = 0;
-                              }
+                              //if (i == 100)
+                              //{
+                              //    Thread.Sleep(2000);
+                              //    i = 0;
+                              //}
                               //Thread.Sleep(500);
                           }
 
