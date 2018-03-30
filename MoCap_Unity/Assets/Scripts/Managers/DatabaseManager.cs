@@ -405,4 +405,10 @@ public class DatabaseManager : MonoBehaviour
 
 
     }
+
+    public static void DeleteAllData()
+    {
+        Router.DataWithAssID (Router.AID).RemoveValueAsync();
+        Debug.Log("Deleting Data...");
+    }
 }

@@ -849,7 +849,7 @@ public class RunAlgorithms : MonoBehaviour
 
     int cummDataCount = 0;
     double cummERMScore = 0.0;
-    uint i = 0; //1;
+    uint updateCouter = 0; //1;
     uint k = 0; //1; // Used to keep risk calculations in sync with the incoming data. I.e. error doesn't calculate twice for every one data pt
 
     const int num_joints = 7;
@@ -924,8 +924,14 @@ public class RunAlgorithms : MonoBehaviour
         });
         t.Start();
         #endregion
-       
-//        Debug.Log("serverDT: " + serverDT);
+
+        GrabAnalysisInfo();
+
+        //DatabaseManager.DeleteAllData();
+
+        Thread.Sleep(1000);
+
+        //        Debug.Log("serverDT: " + serverDT);
 
         #region  Retrieves Sensor Data fron the Server
         //Router.DataWithEmpID(Router.EID).GetValueAsync().ContinueWith(t =>
@@ -1051,6 +1057,7 @@ public class RunAlgorithms : MonoBehaviour
             dbStamp = DatabaseManager.DTStamp;
             DatabaseManager.DataChanged = false;
             cummDataCount++;
+            updateCouter++;
         }
 
         if (data.Count == 7) //data.Count != 0)
@@ -1063,7 +1070,7 @@ public class RunAlgorithms : MonoBehaviour
             Joints[5].transform.rotation = SensData2Quat(data[5]);
             Joints[6].transform.rotation = SensData2Quat(data[6]);
 
-            for (int z = 0; z < num_joints; z++) 
+            for (int z = 0; z < num_joints; z++)
             {
                 jointPos[z] = Joints[z].transform.position;
             }
@@ -1096,12 +1103,12 @@ public class RunAlgorithms : MonoBehaviour
                 //updateRiskOcc();
             }
 
-            if(cummDataCount >= 50)
+            if (updateCouter >= 50)
             {
+                updateCouter = 0;
                 updateRiskOcc();
             }
 
-            //i++;
             data.Clear();
         }
 
@@ -1129,61 +1136,61 @@ public class RunAlgorithms : MonoBehaviour
         {
             if (t.IsFaulted)
             {
-                    // Handle the error...
-                    Debug.Log("Error Getting File (Once)!");
+                // Handle the error...
+                Debug.Log("Error Getting File (Once)!");
             }
             else if (t.IsCompleted)
             {
-                    #region GetValueAsync
-                    Router.AssesmentWithID(Router.AID)//.Child("endDate")
-                  .GetValueAsync().ContinueWith(task =>
+                #region GetValueAsync
+                Router.AssesmentWithID(Router.AID)//.Child("endDate")
+              .GetValueAsync().ContinueWith(task =>
+              {
+                  if (task.IsFaulted)
                   {
-                      if (task.IsFaulted)
-                      {
-                              // Handle the error...
-                              Debug.Log("Error Getting File (Once)!");
-                      }
-                      else if (task.IsCompleted)
-                      {
-                          DataSnapshot snapshot = task.Result;
-                          Debug.Log("In PushData");
-                          // Do something with snapshot...
-                          IDictionary<string, object> idict = (IDictionary<string, object>)snapshot.Value;
-                          //foreach (string s in idict.Keys)
-                              
-                          UInt64 u = Convert.ToUInt64( idict["currentTime"]);
-                          serverDT = u;
-                          minuteStamp = u;
+                      // Handle the error...
+                      Debug.Log("Error Getting File (Once)!");
+                  }
+                  else if (task.IsCompleted)
+                  {
+                      DataSnapshot snapshot = task.Result;
+                      Debug.Log("In PushData");
+                      // Do something with snapshot...
+                      IDictionary<string, object> idict = (IDictionary<string, object>)snapshot.Value;
+                      //foreach (string s in idict.Keys)
 
-                          Debug.Log("Now Pushing");
-                          Dictionary<string, object> dic2 = new Dictionary<string, object>();
-                          int i = 0;
-                          foreach (double[] dat in dummyData) //(int i = 0; i < dummyData.Length; i++)
-                          {
-                              string str = (u).ToString();
-                              //Debug.LogFormat("dat[0]: {0}\t dat[1]: {1}\t dat[2]: {2}\t dat[3]: {3}", dat[0], dat[1], dat[2], dat[3]);
-                              dic2.Add("qw", dat[0]); dic2.Add("qx", dat[1]); dic2.Add("qy", dat[2]); dic2.Add("qz", dat[3]);
-                              //Debug.LogFormat("dic2[\"qw\"]: {0}\t dic2[\"qx\"]: {1}\t dic2[\"qy\"]: {2}\t dic2[\"qz\"]: {3}", dic2["qw"], dic2["qx"], dic2["qy"], dic2["qz"]);
-                              //Debug.Log("STR: " + str);
-                              for(int y = 0; y < 7; y++)
+                      UInt64 u = Convert.ToUInt64(idict["currentTime"]);
+                      serverDT = u;
+                      minuteStamp = u;
+
+                      Debug.Log("Now Pushing");
+                      Dictionary<string, object> dic2 = new Dictionary<string, object>();
+                      int i = 0;
+                      foreach (double[] dat in dummyData) //(int i = 0; i < dummyData.Length; i++)
+                      {
+                          string str = (u).ToString();
+                          //Debug.LogFormat("dat[0]: {0}\t dat[1]: {1}\t dat[2]: {2}\t dat[3]: {3}", dat[0], dat[1], dat[2], dat[3]);
+                          dic2.Add("qw", dat[0]); dic2.Add("qx", dat[1]); dic2.Add("qy", dat[2]); dic2.Add("qz", dat[3]);
+                          //Debug.LogFormat("dic2[\"qw\"]: {0}\t dic2[\"qx\"]: {1}\t dic2[\"qy\"]: {2}\t dic2[\"qz\"]: {3}", dic2["qw"], dic2["qx"], dic2["qy"], dic2["qz"]);
+                          //Debug.Log("STR: " + str);
+                          for (int y = 0; y < 7; y++)
                               Router.DataWithAssID(Router.AID).Child(str).Child(((char)(y + 65)).ToString()).SetValueAsync(dic2); //UpdateChildrenAsync
-                              dic2.Clear();
-                              u += 50;
-                              i++;
-                              //if (i == 100)
-                              //{
-                              //    Thread.Sleep(2000);
-                              //    i = 0;
-                              //}
-                              //Thread.Sleep(500);
-                          }
-
+                          dic2.Clear();
+                          u += 50;
+                          i++;
+                          //if (i == 100)
+                          //{
+                          //    Thread.Sleep(2000);
+                          //    i = 0;
+                          //}
+                          //Thread.Sleep(500);
                       }
-                  });
-                    #endregion
-                }
-                
-            });
+
+                  }
+              });
+                #endregion
+            }
+
+        });
 
     }
 
@@ -1191,54 +1198,33 @@ public class RunAlgorithms : MonoBehaviour
     {
         int count = cummDataCount;
         double score = cummERMScore;
-        cummDataCount = 0;
-        cummERMScore = 0;
+        //cummDataCount = 0;
+        //cummERMScore = 0;
 
         #region Updates the entries associated with the risk in the Assessment node on firebase
         Dictionary<string, object> totalOccDic = new Dictionary<string, object>();
-        Router.AssesmentWithID(Router.AID)
-          .GetValueAsync().ContinueWith(task =>
-          {
-              if (task.IsFaulted)
-              {
-                  // Handle the error...
-                  Debug.Log("Error Getting File (Once)!");
-              }
-              else if (task.IsCompleted)
-              {
-                  DataSnapshot snapshot = task.Result;
 
-                  // Do something with snapshot...
-                  IDictionary<string, object> idict = (IDictionary<string, object>)snapshot.Value;
+        totalOccDic.Add("totalDataCount", count);
+        totalOccDic.Add("totalErmScore", Math.Round(score, 2));
 
-                  Debug.Log("In update - cummERMScore: " + cummERMScore);
-                  Debug.Log("In update - count Before: " + count);
-                  Debug.Log("In update - score Before: " + score);
+        Debug.Log("In update - count: " + count);
+        Debug.Log("In update - score: " + score);
 
-                  count = (Convert.ToInt32(idict["totalDataCount"]) + count);
-                  score = (Convert.ToDouble(idict["totalErmScore"]) + score);
+        Router.AssesmentWithID(Router.AID).UpdateChildrenAsync(totalOccDic).ContinueWith(tk =>
+        {
+            if (tk.IsFaulted)
+            {
+                // Handle the error...
+                Debug.Log("Error Getting File (Once)!");
+            }
+            else if (tk.IsCompleted)
+            {
+                Debug.LogFormat("Clearing Update - count: {0}   score: {1}", count, score);
 
-                  totalOccDic.Add("totalDataCount", count);
-                  totalOccDic.Add("totalErmScore", Math.Round(score, 2));
-
-                  Debug.Log("In update - count: " + count);
-                  Debug.Log("In update - score: " + score);
-
-                  Router.AssesmentWithID(Router.AID).UpdateChildrenAsync(totalOccDic).ContinueWith(tk =>
-                  {
-                      if (tk.IsFaulted)
-                      {
-                          // Handle the error...
-                          Debug.Log("Error Getting File (Once)!");
-                      }
-                      else if (tk.IsCompleted)
-                      {
-                          Debug.LogFormat("Clearing Update - count: {0}   score: {1}", count, score);
-
-                      }
-                  });
-              }
-          });
+            }
+        });
+        //    }
+        //});
         #endregion
 
         #region Uploads the entries that goes into the occurences node on firebase
@@ -1278,8 +1264,8 @@ public class RunAlgorithms : MonoBehaviour
               {
                   if (task.IsFaulted)
                   {
-                          // Handle the error...
-                          Debug.Log("Error Getting File (Once)!");
+                      // Handle the error...
+                      Debug.Log("Error Getting File (Once)!");
                   }
                   else if (task.IsCompleted)
                   {
@@ -1288,6 +1274,7 @@ public class RunAlgorithms : MonoBehaviour
                       IDictionary<string, object> idict = (IDictionary<string, object>)snapshot.Value;
 
                       serverDT = Convert.ToUInt64(idict["currentTime"]);
+
                       Debug.Log("serverDT in Get: " + serverDT);
                   }
               });
@@ -1296,5 +1283,30 @@ public class RunAlgorithms : MonoBehaviour
 
         });
     }
+
+    void GrabAnalysisInfo()
+    {
+        Router.AssesmentWithID(Router.AID)
+          .GetValueAsync().ContinueWith(task =>
+          {
+              if (task.IsFaulted)
+              {
+                  // Handle the error...
+                  Debug.Log("Error Getting File (Once)!");
+              }
+              else if (task.IsCompleted)
+              {
+                  DataSnapshot snapshot = task.Result;
+
+                  // Do something with snapshot...
+                  IDictionary<string, object> idict = (IDictionary<string, object>)snapshot.Value;
+
+
+                  cummDataCount = Convert.ToInt32(idict["totalDataCount"]);
+                  cummERMScore = Convert.ToDouble(idict["totalErmScore"]);
+              }
+          });
+    }
+
 
 }
