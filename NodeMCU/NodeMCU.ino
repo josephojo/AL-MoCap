@@ -1,12 +1,12 @@
 //Communicate between ESP8266
 //Send over to firebase
 
-//#include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h>
 #include <FirebaseArduino.h>
 
 // Set these to run example.
-#define FIREBASE_HOST "capstone-93530.firebaseio.com"
-#define FIREBASE_AUTH "xCTPZkhkxeJmjUI6HGAYSEFnpnJNR4jOn5SsqBZ7"
+#define FIREBASE_HOST "ultima-apparel.firebaseio.com/users/Ar07J0EG9hWlUwQvTBEeH0pvMXu2/data/-L5ohOlG020TA2K3tXrg"
+#define FIREBASE_AUTH "0rTZmBQf86XpBEkF0rtG5KqjAwq8WSbevI1WvBok"
 #define WIFI_SSID "lg"
 #define WIFI_PASSWORD "itspassword"
 
@@ -40,19 +40,23 @@ StaticJsonBuffer<256> sensorBuff; // used to create data Json objects
 int quatNum = 0;
 int sensorNum = 0;
 long timeStamp = 0;
-String sensorID[];
+String sensorID[7];
 float quats[7][4];
+StaticJsonBuffer<50> jsonBuffer;
+JsonObject& timeStampObject = jsonBuffer.createObject();
+//timeStampObject[".sv"] = "timestamp";
+long startTime = timeStampObject[".sv"];
 
 String str = "";
 char chr;
 
 void loop() 
 {
-  
+
   if (sensorNum == 7)
   {
     JsonArray& arr = arrBuffer.createArray(); // SensorId level
-    for(int = 0; i < sensorNum; i++)
+    for(int i = 0; i < sensorNum; i++)
     {
       JsonObject& root = sensorBuff.createObject();
       JsonObject& nested = root.createNestedObject(sensorID[i]); // ... => sensorObj
@@ -63,7 +67,7 @@ void loop()
 
       arr.add(root);
     }
-    Firebase.set(dataPath + (timeStamp + startTime), arrBuffer.parse());
+    Firebase.set(dataPath + (timeStamp + startTime), arr); //arrBuffer.parse(arr));
     if (Firebase.failed()) 
     {
 //      while(1)
@@ -137,7 +141,9 @@ void loop()
     }
     else if (chr == '|')
     {
-      timeStamp = (long)str);
+      char conv[256];
+      str.toCharArray(conv, 256);
+      timeStamp = atol(conv);
       str = "";
     }
     else if (chr == '\n' || chr == '\r')
