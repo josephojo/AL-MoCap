@@ -32,8 +32,8 @@ void setup() {
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 }
 
-StaticarrBuffer<512> arrBuffer; // Timestamp Level
-StaticarrBuffer<256> sensorBuff; // used to create data Json objects
+StaticJsonBuffer<512> arrBuffer; // Timestamp Level
+StaticJsonBuffer<256> sensorBuff; // used to create data Json objects
 
 //array.printTo(Serial);
 
