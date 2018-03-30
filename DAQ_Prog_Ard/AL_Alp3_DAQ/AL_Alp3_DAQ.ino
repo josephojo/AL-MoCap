@@ -17,7 +17,7 @@
 //#define DEBUG_CODE
 
 // ########### Pin Definitions ############
-#define LED1_PIN LED_BUILTIN // LED Indicator pin
+#define LED1_PIN 2 // LED Indicator pin
 #define LED2_PIN 3 // LED Indicator pin
 #define VIB1_PIN 4
 #define VIB2_PIN 5
@@ -117,6 +117,11 @@ void setup()
   while (!Serial); // wait for Arduino serial to be ready
 #endif
 
+#ifdef TRANSMIT
+  Serial4.begin(115200);
+  while (!Serial); // wait for Arduino serial to be ready
+#endif
+
   // ##############----------- INTERRUPT ATTACH ------------------->
   attachInterrupt(digitalPinToInterrupt(BUTTON_INT), calibrateData, FALLING);
   attachInterrupt(digitalPinToInterrupt(SENTRAL0_INT), checkINT0, RISING);
@@ -156,15 +161,15 @@ void setup()
 
 
 #ifdef DEBUG_CODE
-    Serial.print((char)(i + 65)); Serial.print(",");
-    Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
-    Serial.print(initial_q[i].x); Serial.print(",");
-    Serial.print(initial_q[i].y); Serial.print(",");
-    Serial.print(initial_q[i].z);
-    if (i < NUM_IMUS - 1)
-      Serial.print("/");
-    else if (i >= NUM_IMUS - 1)
-      Serial.println();
+//    Serial.print((char)(i + 65)); Serial.print(",");
+//    Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
+//    Serial.print(initial_q[i].x); Serial.print(",");
+//    Serial.print(initial_q[i].y); Serial.print(",");
+//    Serial.print(initial_q[i].z);
+//    if (i < NUM_IMUS - 1)
+//      Serial.print("/");
+//    else if (i >= NUM_IMUS - 1)
+//      Serial.println();
 #endif
   }
 
@@ -249,12 +254,12 @@ void loop()
             joint_q[i] = s2j_q[i].getProduct(sentral_q[i]); // This line gets the true rotations of the joints based on the relationship with initial orien and sentral orien
 
 #ifdef TRANSMIT
-            Serial.print(millis() - tStart); Serial.print("|");
-            Serial.print((char)(i + 65)); //Serial.print(",");
-            Serial.print(joint_q[i].w); Serial.print(","); //Serial.print("\t");
-            Serial.print(joint_q[i].x); Serial.print(",");
-            Serial.print(joint_q[i].y); Serial.print(",");
-            Serial.print(joint_q[i].z); Serial.print(",");
+            Serial4.print(millis() - tStart); Serial4.print("|");
+            Serial4.print((char)(i + 65)); //Serial.print(",");
+            Serial4.print(joint_q[i].w); Serial4.print(","); //Serial.print("\t");
+            Serial4.print(joint_q[i].x); Serial4.print(",");
+            Serial4.print(joint_q[i].y); Serial4.print(",");
+            Serial4.print(joint_q[i].z); Serial4.print(",");
 //            if (i < NUM_IMUS - 1)
 //              Serial.print("/");
 //            else if (i >= NUM_IMUS - 1)
