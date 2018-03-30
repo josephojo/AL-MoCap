@@ -35,6 +35,9 @@ public class DatabaseManager : MonoBehaviour
     static string dtStamp = "";
     static bool dataChanged;
 
+    static Queue inputQ = new Queue();
+
+
     void Awake()
     {
         if (sharedInstance == null)
@@ -161,20 +164,21 @@ public class DatabaseManager : MonoBehaviour
 
             //foreach (DataSnapshot dSnap in args.Snapshot.Children) // Loops through the DataCaptures (#s)
             //{
-                // Debug.Log("dSnap.Key: " + dSnap.Key); // Result = Data Captures (#)
+            // Debug.Log("dSnap.Key: " + dSnap.Key); // Result = Data Captures (#)
 
-                foreach (DataSnapshot dSnap1 in args.Snapshot.Children) //dSnap.Children) // Loops through the sensors (A-G)
-                {
-                    Debug.Log("dSnap1.Key: " + dSnap1.Key); // Result = Sensor Letter (A,B,C etc)
-                    iDictData = (IDictionary<string, object>)dSnap1.Value;
+            foreach (DataSnapshot dSnap1 in args.Snapshot.Children) //dSnap.Children) // Loops through the sensors (A-G)
+            {
+                Debug.Log("dSnap1.Key: " + dSnap1.Key); // Result = Sensor Letter (A,B,C etc)
+                iDictData = (IDictionary<string, object>)dSnap1.Value;
 
-                    //Debug.Log("iDictData[QW]: " + iDictData["qw"]);
-                    SensorData sense = new SensorData(iDictData);
-                    list1.Add(sense); // Letters/Data
-                                      //Debug.Log("Sense: " + sense.Qw);
-                }
-                list2.Add(list1.GetRange(0, list1.Count)); // DataCaptures/Letters/Data
-                //list1.Clear();
+                //Debug.Log("iDictData[QW]: " + iDictData["qw"]);
+                SensorData sense = new SensorData(iDictData);
+                list1.Add(sense); // Letters/Data
+                                  //Debug.Log("Sense: " + sense.Qw);
+            }
+            list2.Add(list1.GetRange(0, list1.Count)); // DataCaptures/Letters/Data
+            inputQ.Enqueue(list1.GetRange(0, list1.Count));
+            //list1.Clear();
             //}
             tempData.AddRange(list1); //list2);
             list1.Clear();
@@ -283,11 +287,10 @@ public class DatabaseManager : MonoBehaviour
                     //Debug.Log("iDictData[QW]: " + iDictData["qw"]);
                     SensorData sense = new SensorData(iDictData);
                     list1.Add(sense); // Letters/Data
-                                      //Debug.Log("Sense: " + sense.Qw);
                 }
                 list2.Add(list1.GetRange(0, list1.Count)); // DataCaptures/Letters/Data
-                                                           //list1.Clear();
-                                                           //}
+                inputQ.Enqueue(list1.GetRange(0, list1.Count));
+
                 tempData.AddRange(list1); //list2);
                 list1.Clear();
                 //Debug.Log("TempData: " + tempData[0].Count);

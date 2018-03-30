@@ -20,107 +20,107 @@ public class RunAlgorithms : MonoBehaviour
            new double[] {1,0.02,-0.07,0.01    },
            new double[] {1,0.03,-0.09,0.01    },
            new double[] {0.99,0.04,-0.11,0.01 },
-           //new double[] {0.99,0.05,-0.13,0.01 },
-           //new double[] {0.99,0.06,-0.16,0.01 },
-           //new double[] {0.98,0.06,-0.19,0.01 },
-           //new double[] {0.97,0.06,-0.22,0.01 },
-           //new double[] {0.97,0.06,-0.24,0.01 },
-           //new double[] {0.96,0.06,-0.26,0.01 },
-           //new double[] {0.96,0.06,-0.28,0.01 },
-           //new double[] {0.95,0.06,-0.3,0.01  },
-           //new double[] {0.95,0.07,-0.32,0.02 },
-           //new double[] {0.94,0.07,-0.33,0.03 },
-           //new double[] {0.94,0.07,-0.34,0.03 },
-           //new double[] {0.93,0.07,-0.35,0.03 },
-           //new double[] {0.93,0.08,-0.37,0.03 },
-           //new double[] {0.92,0.08,-0.39,0.04 },
-           //new double[] {0.91,0.08,-0.4,0.03  },
-           //new double[] {0.9,0.09,-0.42,0.03  },
-           //new double[] {0.89,0.09,-0.44,0.04 },
-           //new double[] {0.89,0.1,-0.45,0.03  },
-           //new double[] {0.88,0.1,-0.46,0.04  },
-           //new double[] {0.88,0.1,-0.47,0.04  },
-           //new double[] {0.87,0.1,-0.48,0.04  },
-           //new double[] {0.87,0.1,-0.49,0.04  },
-           //new double[] {0.86,0.1,-0.49,0.04  },
-           //new double[] {0.86,0.11,-0.5,0.04  },
-           //new double[] {0.86,0.11,-0.5,0.04  },
-           //new double[] {0.86,0.11,-0.5,0.04  },
-           //new double[] {0.86,0.1,-0.5,0.04   },
-           //new double[] {0.86,0.1,-0.51,0.04  },
-           //new double[] {0.86,0.1,-0.51,0.04  },
-           //new double[] {0.85,0.1,-0.51,0.04  },
-           //new double[] {0.85,0.1,-0.51,0.04  },
-           //new double[] {0.85,0.1,-0.51,0.04  },
-           //new double[] {0.85,0.1,-0.51,0.04  },
-           //new double[] {0.86,0.1,-0.51,0.04  },
-           //new double[] {0.86,0.1,-0.51,0.04  },
-           //new double[] {0.86,0.09,-0.5,0.04  },
-           //new double[] {0.86,0.09,-0.5,0.04  },
-           //new double[] {0.87,0.09,-0.48,0.03 },
-           //new double[] {0.88,0.08,-0.46,0.03 },
-           //new double[] {0.9,0.07,-0.44,0.02  },
-           //new double[] {0.91,0.07,-0.42,0.02 },
-           //new double[] {0.92,0.07,-0.39,0.01 },
-           //new double[] {0.93,0.06,-0.35,0.01 },
-           //new double[] {0.95,0.06,-0.31,0.01 },
-           //new double[] {0.96,0.05,-0.29,0.01 },
-           //new double[] {0.97,0.05,-0.24,0.01 },
-           //new double[] {0.98,0.05,-0.21,0.01 },
-           //new double[] {0.98,0.04,-0.17,0.01 },
-           //new double[] {0.99,0.03,-0.15,0    },
-           //new double[] {0.99,0.03,-0.12,0    },
-           //new double[] {0.99,0.02,-0.1,0     },
-           //new double[] {1,0.02,-0.08,0       },
-           //new double[] {1,0.02,-0.07,0       },
-           //new double[] {1,0.03,-0.06,0       },
-           //new double[] {1,0.03,-0.05,0       },
-           //new double[] {1,0.03,-0.04,0       },
-           //new double[] {1,0.03,-0.03,0       },
-           //new double[] {1,0.02,-0.03,0       },
-           //new double[] {1,0.02,-0.02,0       },
-           //new double[] {1,0.02,-0.02,0       },
-           //new double[] {1,0.01,-0.02,0       },
-           //new double[] {1,0.01,-0.02,0       },
-           //new double[] {1,0.01,-0.02,0       },
-           //new double[] {1,0.01,-0.02,0       },
-           //new double[] {1,0.01,-0.02,0       },
-           //new double[] {1,0.01,-0.02,0       },
-           //new double[] {1,0.01,-0.02,0       },
-           //new double[] {1,0.01,-0.03,0       },
-           //new double[] {1,0.01,-0.03,0       },
-           //new double[] {1,0.01,-0.03,0       },
-           //new double[] {1,0.01,-0.03,0       },
-           //new double[] {1,0.01,-0.03,0       },
-           //new double[] {1,0.01,-0.03,0       },
-           //new double[] {1,0.01,-0.03,0       },
-           //new double[] {1,0.01,-0.03,0       },
-           //new double[] {1,0.01,-0.03,0       },
-           //new double[] {1,0.01,-0.03,0       },
-           //new double[] {1,0.01,-0.04,0       },
-           //new double[] {1,0.01,-0.04,0       },
-           //new double[] {1,0.01,-0.05,0       },
-           //new double[] {1,0.01,-0.07,0       },
-           //new double[] {1,0.01,-0.08,0       },
-           //new double[] {0.99,0,-0.11,0       },
-           //new double[] {0.99,0,-0.12,0       },
-           //new double[] {0.99,0.01,-0.15,-0.01},
-           //new double[] {0.98,0,-0.18,-0.01   },
-           //new double[] {0.98,0.01,-0.2,-0.01 },
-           //new double[] {0.97,0.01,-0.23,-0.01},
-           //new double[] {0.97,0.01,-0.25,-0.01},
-           //new double[] {0.96,0.01,-0.28,-0.01},
-           //new double[] {0.95,0.02,-0.3,-0.02 },
-           //new double[] {0.94,0.03,-0.33,-0.02},
-           //new double[] {0.93,0.03,-0.36,-0.02},
-           //new double[] {0.92,0.04,-0.38,-0.02},
-           //new double[] {0.91,0.04,-0.41,-0.02},
-           //new double[] {0.9,0.05,-0.43,-0.02 },
-           //new double[] {0.89,0.05,-0.45,-0.02},
-           //new double[] {0.88,0.05,-0.46,-0.01},
-           //new double[] {0.88,0.06,-0.48,-0.01},
-           //new double[] {0.87,0.06,-0.5,-0.01 },
-           //new double[] {0.86,0.07,-0.51,-0.01},
+           new double[] {0.99,0.05,-0.13,0.01 },
+           new double[] {0.99,0.06,-0.16,0.01 },
+           new double[] {0.98,0.06,-0.19,0.01 },
+           new double[] {0.97,0.06,-0.22,0.01 },
+           new double[] {0.97,0.06,-0.24,0.01 },
+           new double[] {0.96,0.06,-0.26,0.01 },
+           new double[] {0.96,0.06,-0.28,0.01 },
+           new double[] {0.95,0.06,-0.3,0.01  },
+           new double[] {0.95,0.07,-0.32,0.02 },
+           new double[] {0.94,0.07,-0.33,0.03 },
+           new double[] {0.94,0.07,-0.34,0.03 },
+           new double[] {0.93,0.07,-0.35,0.03 },
+           new double[] {0.93,0.08,-0.37,0.03 },
+           new double[] {0.92,0.08,-0.39,0.04 },
+           new double[] {0.91,0.08,-0.4,0.03  },
+           new double[] {0.9,0.09,-0.42,0.03  },
+           new double[] {0.89,0.09,-0.44,0.04 },
+           new double[] {0.89,0.1,-0.45,0.03  },
+           new double[] {0.88,0.1,-0.46,0.04  },
+           new double[] {0.88,0.1,-0.47,0.04  },
+           new double[] {0.87,0.1,-0.48,0.04  },
+           new double[] {0.87,0.1,-0.49,0.04  },
+           new double[] {0.86,0.1,-0.49,0.04  },
+           new double[] {0.86,0.11,-0.5,0.04  },
+           new double[] {0.86,0.11,-0.5,0.04  },
+           new double[] {0.86,0.11,-0.5,0.04  },
+           new double[] {0.86,0.1,-0.5,0.04   },
+           new double[] {0.86,0.1,-0.51,0.04  },
+           new double[] {0.86,0.1,-0.51,0.04  },
+           new double[] {0.85,0.1,-0.51,0.04  },
+           new double[] {0.85,0.1,-0.51,0.04  },
+           new double[] {0.85,0.1,-0.51,0.04  },
+           new double[] {0.85,0.1,-0.51,0.04  },
+           new double[] {0.86,0.1,-0.51,0.04  },
+           new double[] {0.86,0.1,-0.51,0.04  },
+           new double[] {0.86,0.09,-0.5,0.04  },
+           new double[] {0.86,0.09,-0.5,0.04  },
+           new double[] {0.87,0.09,-0.48,0.03 },
+           new double[] {0.88,0.08,-0.46,0.03 },
+           new double[] {0.9,0.07,-0.44,0.02  },
+           new double[] {0.91,0.07,-0.42,0.02 },
+           new double[] {0.92,0.07,-0.39,0.01 },
+           new double[] {0.93,0.06,-0.35,0.01 },
+           new double[] {0.95,0.06,-0.31,0.01 },
+           new double[] {0.96,0.05,-0.29,0.01 },
+           new double[] {0.97,0.05,-0.24,0.01 },
+           new double[] {0.98,0.05,-0.21,0.01 },
+           new double[] {0.98,0.04,-0.17,0.01 },
+           new double[] {0.99,0.03,-0.15,0    },
+           new double[] {0.99,0.03,-0.12,0    },
+           new double[] {0.99,0.02,-0.1,0     },
+           new double[] {1,0.02,-0.08,0       },
+           new double[] {1,0.02,-0.07,0       },
+           new double[] {1,0.03,-0.06,0       },
+           new double[] {1,0.03,-0.05,0       },
+           new double[] {1,0.03,-0.04,0       },
+           new double[] {1,0.03,-0.03,0       },
+           new double[] {1,0.02,-0.03,0       },
+           new double[] {1,0.02,-0.02,0       },
+           new double[] {1,0.02,-0.02,0       },
+           new double[] {1,0.01,-0.02,0       },
+           new double[] {1,0.01,-0.02,0       },
+           new double[] {1,0.01,-0.02,0       },
+           new double[] {1,0.01,-0.02,0       },
+           new double[] {1,0.01,-0.02,0       },
+           new double[] {1,0.01,-0.02,0       },
+           new double[] {1,0.01,-0.02,0       },
+           new double[] {1,0.01,-0.03,0       },
+           new double[] {1,0.01,-0.03,0       },
+           new double[] {1,0.01,-0.03,0       },
+           new double[] {1,0.01,-0.03,0       },
+           new double[] {1,0.01,-0.03,0       },
+           new double[] {1,0.01,-0.03,0       },
+           new double[] {1,0.01,-0.03,0       },
+           new double[] {1,0.01,-0.03,0       },
+           new double[] {1,0.01,-0.03,0       },
+           new double[] {1,0.01,-0.03,0       },
+           new double[] {1,0.01,-0.04,0       },
+           new double[] {1,0.01,-0.04,0       },
+           new double[] {1,0.01,-0.05,0       },
+           new double[] {1,0.01,-0.07,0       },
+           new double[] {1,0.01,-0.08,0       },
+           new double[] {0.99,0,-0.11,0       },
+           new double[] {0.99,0,-0.12,0       },
+           new double[] {0.99,0.01,-0.15,-0.01},
+           new double[] {0.98,0,-0.18,-0.01   },
+           new double[] {0.98,0.01,-0.2,-0.01 },
+           new double[] {0.97,0.01,-0.23,-0.01},
+           new double[] {0.97,0.01,-0.25,-0.01},
+           new double[] {0.96,0.01,-0.28,-0.01},
+           new double[] {0.95,0.02,-0.3,-0.02 },
+           new double[] {0.94,0.03,-0.33,-0.02},
+           new double[] {0.93,0.03,-0.36,-0.02},
+           new double[] {0.92,0.04,-0.38,-0.02},
+           new double[] {0.91,0.04,-0.41,-0.02},
+           new double[] {0.9,0.05,-0.43,-0.02 },
+           new double[] {0.89,0.05,-0.45,-0.02},
+           new double[] {0.88,0.05,-0.46,-0.01},
+           new double[] {0.88,0.06,-0.48,-0.01},
+           new double[] {0.87,0.06,-0.5,-0.01 },
+           new double[] {0.86,0.07,-0.51,-0.01},
            //new double[] {0.86,0.07,-0.51,-0.01},
            //new double[] {0.85,0.07,-0.52,-0.01},
            //new double[] {0.84,0.07,-0.53,-0.01},
@@ -847,7 +847,7 @@ public class RunAlgorithms : MonoBehaviour
 
     MovieRecorder mRec = new MovieRecorder();
 
-    uint cummDataCount = 0;
+    int cummDataCount = 0;
     double cummERMScore = 0.0;
     uint i = 0; //1;
     uint k = 0; //1; // Used to keep risk calculations in sync with the incoming data. I.e. error doesn't calculate twice for every one data pt
@@ -1045,42 +1045,13 @@ public class RunAlgorithms : MonoBehaviour
 
     void FixedUpdate()
     {
-        
-        //Debug.Log("i: " + i);
-        //Debug.Log("k: " + k);
-        //Debug.Log("Data.Count: " + DatabaseManager.Data.Count);
-        //Debug.Log("Data[2].Count: " + DatabaseManager.Data[2].Count);
-        //Debug.Log("DatabaseManager.DataChanged: " + DatabaseManager.DataChanged);
         if (DatabaseManager.DataChanged == true) //(i >= DatabaseManager.Data.Count && DatabaseManager.DataChanged == true)
         {
-            //mRec.EndRecording();
-            //Debug.Log("minuteStamp: " + minuteStamp);
-            //Debug.Log("DatabaseManager.DTStamp: " + DatabaseManager.DTStamp);
-            //if ((dbStamp - minuteStamp) >= 150)//60000)
-            //{
-            //    Debug.Log("(minuteStamp - DatabaseManager.DTStamp): " + (dbStamp - minuteStamp));
-
-            //    minuteStamp = dbStamp;
-            //    Debug.Log("Updating!!!!");
-            //    cummDataCount = i;
-            //    i = 0;
-            //    k = i;// Used to keep risk calculations in sync with the incoming data. I.e. error doesn't calculate twice for every one data pt
-            //    updateRiskOcc();
-            //}
-            DatabaseManager.DataChanged = false;
             data = DatabaseManager.Data;
             dbStamp = DatabaseManager.DTStamp;
-            
-
-            //Debug.Log("data.Count: " + data.Count);
-
-            
-
-            //mRec.BeginRecording();
-
-            //Debug.Log("Time Stamps: " + DatabaseManager.DTStamp);
+            DatabaseManager.DataChanged = false;
+            cummDataCount++;
         }
-
 
         if (data.Count == 7) //data.Count != 0)
         {
@@ -1091,49 +1062,50 @@ public class RunAlgorithms : MonoBehaviour
             Joints[4].transform.rotation = SensData2Quat(data[4]);
             Joints[5].transform.rotation = SensData2Quat(data[5]);
             Joints[6].transform.rotation = SensData2Quat(data[6]);
-            // Debug.Log("SensData2Quat(data[i][5]): " + SensData2Quat(data[i][5]));
 
             for (int z = 0; z < num_joints; z++) 
             {
                 jointPos[z] = Joints[z].transform.position;
             }
 
-            //if (i == k + 1)
-            //{
-                bool[] risky = new bool[3];
-                risky[0] = erm.checkBack((jointPos[2].z - jointPos[3].z) * 1000); // Compares the difference between waist location and neckish location and triggers risk when less than limit (Bending)
-                risky[1] = erm.checkElbow_L((jointPos[0].z - jointPos[1].z) * 1000); // Compares the difference between Left elbow location and Left shou (waist) location and triggers risk when less than limit (Bending)
-                risky[2] = erm.checkElbow_R((jointPos[6].z - jointPos[5].z) * 1000); // Compares the difference between shoulder location and back (waist) location and triggers risk when less than limit (Bending)
+            bool[] risky = new bool[3];
+            risky[0] = erm.checkBack((jointPos[2].z - jointPos[3].z) * 1000); // Compares the difference between waist location and neckish location and triggers risk when less than limit (Bending)
+            risky[1] = erm.checkElbow_L((jointPos[0].z - jointPos[1].z) * 1000); // Compares the difference between Left elbow location and Left shou (waist) location and triggers risk when less than limit (Bending)
+            risky[2] = erm.checkElbow_R((jointPos[6].z - jointPos[5].z) * 1000); // Compares the difference between shoulder location and back (waist) location and triggers risk when less than limit (Bending)
 
-                if (risky[0] || risky[1] || risky[2])
+            if (risky[0] || risky[1] || risky[2])
+            {
+                //Debug.Log("Risky 0 : " + risky[0]);
+                //Debug.Log("Risky 1 : " + risky[1]);
+                //Debug.Log("Risky 2 : " + risky[2]);
+                cummERMScore += erm.ERM_Risk;
+
+                Dictionary<string, object> dit = new Dictionary<string, object>();
+                dit.Add("ermScore", erm.ERM_Risk);
+                string x = ((Convert.ToUInt64(DatabaseManager.DTStamp))).ToString();
+                //Debug.LogFormat("X: {0}\ti: {1}", x, i);
+                try
                 {
-                    //Debug.Log("Risky 0 : " + risky[0]);
-                    //Debug.Log("Risky 1 : " + risky[1]);
-                    //Debug.Log("Risky 2 : " + risky[2]);
-                    cummERMScore += erm.ERM_Risk; //Debug.Log("DatabaseManager.DTStamp: " + DatabaseManager.DTStamp);
-
-                    Dictionary<string, object> dit = new Dictionary<string, object>();
-                    dit.Add("ermScore", erm.ERM_Risk);
-                    string x = ((Convert.ToUInt64(DatabaseManager.DTStamp)) ).ToString(); //+ (i * 50)
-                    Debug.LogFormat("X: {0}\ti: {1}", x, i);
-                    try
-                    {
-                        occDics.Add(x, dit); // "+ (i*50)" is used to determine the approx time of the sub-captures assuming 50ms per sub-capture
-                    }
-                    catch (ArgumentException AE)
-                    {
-                        //Debug.LogError("key: " + x + " : " + AE.Message);
-                    }
-                    //occDics[DatabaseManager.DTStamp].Add("gif", );
+                    occDics.Add(x, dit); // "+ (i*50)" is used to determine the approx time of the sub-captures assuming 50ms per sub-capture
                 }
-            //    k = i;
-            //}
-            i++;
+                catch (ArgumentException AE)
+                {
+                    Debug.LogError("key: " + x + " : " + AE.Message);
+                }
+                //occDics[DatabaseManager.DTStamp].Add("gif", );
+                //updateRiskOcc();
+            }
+
+            if(cummDataCount >= 50)
+            {
+                updateRiskOcc();
+            }
+
+            //i++;
             data.Clear();
-            updateRiskOcc();
         }
 
-       
+
     }
 
     DateTime Milli2DateTime(string milli)
@@ -1217,29 +1189,37 @@ public class RunAlgorithms : MonoBehaviour
 
     void updateRiskOcc()
     {
+        int count = cummDataCount;
+        double score = cummERMScore;
+        cummDataCount = 0;
+        cummERMScore = 0;
+
         #region Updates the entries associated with the risk in the Assessment node on firebase
         Dictionary<string, object> totalOccDic = new Dictionary<string, object>();
         Router.AssesmentWithID(Router.AID)
           .GetValueAsync().ContinueWith(task =>
           {
-          if (task.IsFaulted)
-          {
-              // Handle the error...
-              Debug.Log("Error Getting File (Once)!");
-          }
-          else if (task.IsCompleted)
-          {
-              DataSnapshot snapshot = task.Result;
+              if (task.IsFaulted)
+              {
+                  // Handle the error...
+                  Debug.Log("Error Getting File (Once)!");
+              }
+              else if (task.IsCompleted)
+              {
+                  DataSnapshot snapshot = task.Result;
 
-              // Do something with snapshot...
-              IDictionary<string, object> idict = (IDictionary<string, object>)snapshot.Value;
+                  // Do something with snapshot...
+                  IDictionary<string, object> idict = (IDictionary<string, object>)snapshot.Value;
 
-              Debug.Log("In update - cummERMScore: " + cummERMScore);
-              ulong count = (Convert.ToUInt32(idict["totalDataCount"]) + cummDataCount);
-              double score = (Convert.ToDouble(idict["totalErmScore"]) + cummERMScore);
+                  Debug.Log("In update - cummERMScore: " + cummERMScore);
+                  Debug.Log("In update - count Before: " + count);
+                  Debug.Log("In update - score Before: " + score);
 
-                 totalOccDic.Add("totalDataCount", count);
-                 //totalOccDic.Add("totalErmScore", score);
+                  count = (Convert.ToInt32(idict["totalDataCount"]) + count);
+                  score = (Convert.ToDouble(idict["totalErmScore"]) + score);
+
+                  totalOccDic.Add("totalDataCount", count);
+                  totalOccDic.Add("totalErmScore", Math.Round(score, 2));
 
                   Debug.Log("In update - count: " + count);
                   Debug.Log("In update - score: " + score);
@@ -1253,27 +1233,23 @@ public class RunAlgorithms : MonoBehaviour
                       }
                       else if (tk.IsCompleted)
                       {
-                          Debug.Log("Clearing Update");
-                          cummDataCount = 0;
-                          cummERMScore = 0;
+                          Debug.LogFormat("Clearing Update - count: {0}   score: {1}", count, score);
+
                       }
                   });
-
-                 
-
               }
           });
         #endregion
 
         #region Uploads the entries that goes into the occurences node on firebase
-        //foreach (string key in occDics.Keys)
-        //{
-        //    foreach (Dictionary<string, object> occDic in occDics.Values)
-        //        Router.OccurenceWithID(Router.AID).Child(key).UpdateChildrenAsync(occDic).ContinueWith(task =>
-        //        {
-        //            occDics.Clear();
-        //        });
-        //}
+        foreach (string key in occDics.Keys)
+        {
+            foreach (Dictionary<string, object> occDic in occDics.Values)
+                Router.OccurenceWithID(Router.AID).Child(key).UpdateChildrenAsync(occDic).ContinueWith(task =>
+                {
+                    occDics.Clear();
+                });
+        }
         #endregion
     }
 
