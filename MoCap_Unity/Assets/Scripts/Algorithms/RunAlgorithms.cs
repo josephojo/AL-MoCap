@@ -850,7 +850,6 @@ public class RunAlgorithms : MonoBehaviour
     int cummDataCount = 0;
     double cummERMScore = 0.0;
     uint updateCouter = 0; //1;
-    uint k = 0; //1; // Used to keep risk calculations in sync with the incoming data. I.e. error doesn't calculate twice for every one data pt
 
     const int num_joints = 7;
     public GameObject[] Joints = new GameObject[num_joints];
@@ -865,7 +864,8 @@ public class RunAlgorithms : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        //GrabDateTime();
+        Debug.Log("Started");
+        
 
         #region Updates time on server and then reveiceves the value of time and prints it out (Testing)
         //Dictionary<string, object> dic = new Dictionary<string, object>();
@@ -916,22 +916,23 @@ public class RunAlgorithms : MonoBehaviour
             Router.AID = result[0];
         });
         #endregion
-        Debug.Log("Started");
+
+
         #region Pushes a set of dummy sensor Data to the server
-        t = new Thread(() =>
-        {
-            PushDummySenData();
-        });
-        t.Start();
+        //t = new Thread(() =>
+        //{
+        //    PushDummySenData();
+        //});
+        //t.Start();
         #endregion
+
+        //GrabDateTime();
 
         GrabAnalysisInfo();
 
         //DatabaseManager.DeleteAllData();
 
         Thread.Sleep(1000);
-
-        //        Debug.Log("serverDT: " + serverDT);
 
         #region  Retrieves Sensor Data fron the Server
         //Router.DataWithEmpID(Router.EID).GetValueAsync().ContinueWith(t =>
