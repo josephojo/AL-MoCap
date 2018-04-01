@@ -48,7 +48,7 @@ const uint8_t PWMVal = 180;
 
 SentralMM sentral[NUM_IMUS];
 // Sentral control/status vars
-bool* sentralReady = new bool[NUM_IMUS];
+bool sentralReady[NUM_IMUS];
 uint8_t sentralErr[NUM_IMUS] = {0}; //, 0, 0, 0, 0, 0, 0}; // FIFO storage buffer
 int eepromAddress = 0; // Calibration offsets from the eeprom are going to be stored here.
 double waitTimer[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
