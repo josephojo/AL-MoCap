@@ -1,4 +1,11 @@
-
+/*
+   RED LED blinking - Error from sensors
+   Blue LED blinking - Data being transmitted to NODE MCU
+   Pink Indicator Blinking - Calibration in progress
+   Pink and Red Alternating - Error updating database with currentTime for data logging
+   RED On - Not connected to wifi
+   RED and BLUE Alternating - Not Calibrated yet
+*/
 
 // ================================================================
 // ===                        DEFINITIONS                       ===
@@ -17,8 +24,8 @@
 //#define DEBUG_CODE
 
 // ########### Pin Definitions ############
-#define LED1_PIN 2 // LED Indicator pin
-#define LED2_PIN 3 // LED Indicator pin
+#define BLUE_LED 2 // LED Indicator pin
+#define RED_LED 3 // LED Indicator pin
 #define VIB1_PIN 4
 #define VIB2_PIN 5
 #define VIB3_PIN 6
@@ -90,8 +97,8 @@ void checkINT6();
 void setup()
 {
   // #############----------- PINMODES ---------->>>>
-  pinMode(LED1_PIN, OUTPUT);
-  pinMode(LED2_PIN, OUTPUT);
+  pinMode(BLUE_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
   pinMode(BUTTON_INT, INPUT);
   pinMode(SENTRAL0_INT, INPUT);
   pinMode(SENTRAL1_INT, INPUT);
@@ -103,7 +110,6 @@ void setup()
 
   // <<<<------- PINMODES END --------------
 
-  analogWrite(LED1_PIN, (blinkState[0] * PWMVal) );
 
   // join I2C bus (I2Cdev library doesn't do this automatically)
   Wire.begin();
@@ -113,27 +119,16 @@ void setup()
 
   // Displays extra info through wifi module to Debug the code
 #ifdef DEBUG_CODE
-  Serial.begin(115200);
+  Serial.begin(9600);
   while (!Serial); // wait for Arduino serial to be ready
 #endif
 
 #ifdef TRANSMIT
-  Serial4.begin(115200);
+  Serial4.begin(9600);
   while (!Serial); // wait for Arduino serial to be ready
 #endif
 
-  // ##############----------- INTERRUPT ATTACH ------------------->
-  attachInterrupt(digitalPinToInterrupt(BUTTON_INT), calibrateData, FALLING);
-  attachInterrupt(digitalPinToInterrupt(SENTRAL0_INT), checkINT0, RISING);
-  attachInterrupt(digitalPinToInterrupt(SENTRAL1_INT), checkINT1, RISING);
-  attachInterrupt(digitalPinToInterrupt(SENTRAL2_INT), checkINT2, RISING);
-  attachInterrupt(digitalPinToInterrupt(SENTRAL3_INT), checkINT3, RISING);
-  attachInterrupt(digitalPinToInterrupt(SENTRAL4_INT), checkINT4, RISING);
-  attachInterrupt(digitalPinToInterrupt(SENTRAL5_INT), checkINT5, RISING);
-  attachInterrupt(digitalPinToInterrupt(SENTRAL6_INT), checkINT6, RISING);
-
-
-  // <------------ INTERRUPT ATTACH END --------------
+ 
 
 
   // ###########----------- Get Current Time and perhaps date ------------->
@@ -161,23 +156,85 @@ void setup()
 
 
 #ifdef DEBUG_CODE
-//    Serial.print((char)(i + 65)); Serial.print(",");
-//    Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
-//    Serial.print(initial_q[i].x); Serial.print(",");
-//    Serial.print(initial_q[i].y); Serial.print(",");
-//    Serial.print(initial_q[i].z);
-//    if (i < NUM_IMUS - 1)
-//      Serial.print("/");
-//    else if (i >= NUM_IMUS - 1)
-//      Serial.println();
+    //    Serial.print((char)(i + 65)); Serial.print(",");
+    //    Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
+    //    Serial.print(initial_q[i].x); Serial.print(",");
+    //    Serial.print(initial_q[i].y); Serial.print(",");
+    //    Serial.print(initial_q[i].z);
+    //    if (i < NUM_IMUS - 1)
+    //      Serial.print("/");
+    //    else if (i >= NUM_IMUS - 1)
+    //      Serial.println();
 #endif
   }
 
   timer = millis(); // Used for timing the program i.e when to stop running.
   pause(500); // Allows the sensor to update first few data in registers
-  //calData2User();
+
+  String tempStr = "";
+  while (1)
+  {
+    if (Serial4.available() > 0)
+    {
+      char chr = Serial4.read();
+      //Serial.print("first chr: "); Serial.println(chr);
+      
+      if (chr == '/')
+      {
+        tempStr = "";
+      }
+      else if (chr == '\\')
+      { Serial.print("tempStr: "); Serial.println(tempStr);
+        if (tempStr == "connected")
+        {
+          tempStr = "";
+          blinkState[0] = true;
+          blinkState[1] = false;
+          break;
+        }
+        else if (tempStr == "disconnected")
+        {
+          digitalWrite(RED_LED, HIGH);
+        }
+        else if (tempStr == "noTimeStamp")
+        {
+          digitalWrite(RED_LED, HIGH);
+          while (1)
+          {
+            digitalWrite(BLUE_LED, HIGH);
+            delay(1000);
+            digitalWrite(BLUE_LED, LOW);
+            delay(1000);
+          }
+        } 
+      }
+      else
+      {
+        tempStr += chr;
+      }
+    }
+  
+  }
+//blinkState[0] = true;
+//blinkState[1] = false;
+
+ // ##############----------- INTERRUPT ATTACH ------------------->
+  attachInterrupt(digitalPinToInterrupt(BUTTON_INT), calibrateData, LOW);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL0_INT), checkINT0, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL1_INT), checkINT1, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL2_INT), checkINT2, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL3_INT), checkINT3, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL4_INT), checkINT4, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL5_INT), checkINT5, RISING);
+  attachInterrupt(digitalPinToInterrupt(SENTRAL6_INT), checkINT6, RISING);
+
+
+  // <------------ INTERRUPT ATTACH END --------------
+  
+//Serial.println("Out!");
 }
 
+bool calibratedOnce = false;
 
 // ================================================================
 // ===                    MAIN PROGRAM LOOP                     ===
@@ -185,21 +242,33 @@ void setup()
 
 void loop()
 {
+  if (!calibratedOnce)
+  {
+    
+    if ((millis() - waitTimer[4]) > 150) // blink LED to indicate activity
+    {Serial.println("In Calibrated Once");
+      blinkState[0] = !blinkState[0];
+      blinkState[1] = !blinkState[1];
+      digitalWrite(BLUE_LED, blinkState[0]);
+      digitalWrite(RED_LED, blinkState[1]);
+      waitTimer[4] = millis();
+    }
+  }
 
   if (calibrate_Data)
   {
+    Serial.println("In calData2User");
     calData2User();
   }
-  else
+  else if (!calibrate_Data)
   {
-    if (calibrated_Data == true)
+    if (calibratedOnce == true)
     {
+      //Serial.println("In MainCode");
       if ((millis() - waitTimer[2]) > 500) // blink LED to indicate activity
       {
         blinkState[0] = !blinkState[0];
-        blinkState[1] = !blinkState[1];
-        digitalWrite(LED1_PIN, blinkState[0]);
-        digitalWrite(LED2_PIN, blinkState[1]);
+        digitalWrite(BLUE_LED, blinkState[0]);
         waitTimer[2] = millis();
       }
 
@@ -210,7 +279,7 @@ void loop()
         for (uint8_t i = 0; i < NUM_IMUS; i++)
         {
           tcaselect(i);
-
+          
           if (sentralErr[i] == 1)
           {
             troubleshoot_Err(i);
@@ -260,10 +329,10 @@ void loop()
             Serial4.print(joint_q[i].x); Serial4.print(",");
             Serial4.print(joint_q[i].y); Serial4.print(",");
             Serial4.print(joint_q[i].z); Serial4.print(",");
-//            if (i < NUM_IMUS - 1)
-//              Serial.print("/");
-//            else if (i >= NUM_IMUS - 1)
-//              Serial.println();
+            //            if (i < NUM_IMUS - 1)
+            //              Serial.print("/");
+            //            else if (i >= NUM_IMUS - 1)
+            //              Serial.println();
 #endif
 
           } else
@@ -276,8 +345,8 @@ void loop()
 
       if ((millis() - timer) > 120000)
       {
-        digitalWrite(LED1_PIN, LOW);
-        digitalWrite(LED2_PIN, LOW);
+        digitalWrite(BLUE_LED, LOW);
+        digitalWrite(RED_LED, LOW);
         while (1) {}
       }
 
@@ -338,7 +407,11 @@ void tcaselect(uint8_t i)
 
 void calibrateData()
 {
-  calibrate_Data = true;
+  if(digitalRead(BUTTON_INT) == 0)
+  {
+    calibrate_Data = true;
+    Serial.print("Bttn Status: "); Serial.println(digitalRead(BUTTON_INT));
+  }
 }
 
 void checkINT0() {
@@ -366,10 +439,10 @@ void checkINT6() {
 
 void calData2User()
 {
-  blinkState[0] = false;
+  blinkState[0] = true;
   blinkState[1] = true;
-  digitalWrite(LED1_PIN, blinkState[0]);
-  digitalWrite(LED2_PIN, blinkState[1]);
+  digitalWrite(BLUE_LED, blinkState[0]);
+  digitalWrite(RED_LED, blinkState[1]);
   pause(500);
 
   Quaternion q_Cum;//[NUM_IMUS];
@@ -385,8 +458,10 @@ void calData2User()
       tcaselect(i);
       if ((millis() - waitTimer[2]) > 300) // blink LED to indicate activity
       {
+        blinkState[0] = !blinkState[0];
         blinkState[1] = !blinkState[1];
-        digitalWrite(LED2_PIN, blinkState[1]);
+        digitalWrite(BLUE_LED, blinkState[0]);
+        digitalWrite(RED_LED, blinkState[1]);
         waitTimer[2] = millis();
       }
 
@@ -497,10 +572,10 @@ void calData2User()
   }
 
   calibrate_Data = false;
+  calibratedOnce = true;
+
   blinkState[0] = true;
   blinkState[1] = false;
-  digitalWrite(LED1_PIN, blinkState[0]);
-  digitalWrite(LED2_PIN, blinkState[1]);
   pause(500);
   timer = millis();
 

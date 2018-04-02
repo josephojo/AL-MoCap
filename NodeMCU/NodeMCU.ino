@@ -4,21 +4,22 @@
 #include <ESP8266WiFi.h>
 #include <FirebaseArduino.h>
 
-#define FIREBASE_HOST "al-test-916f1.firebaseio.com" //"ultima-apparel.firebaseio.com" //"al-test-916f1.firebaseio.com"
+#define FIREBASE_HOST "ultima-apparel.firebaseio.com" //"ultima-apparel.firebaseio.com" //"al-test-916f1.firebaseio.com" "al-test-916f1.firebaseio.com"
 #define FIREBASE_AUTH "0rTZmBQf86XpBEkF0rtG5KqjAwq8WSbevI1WvBok"
 #define WIFI_SSID "Jo_V30"
 #define WIFI_PASSWORD "itspassword"
 
-#define DEBUG
+//#define DEBUG
 
-// #define TRANSMIT
+ #define TRANSMIT
 
-String dataPath = "/users/data/-L5ohOlG020TA2K3tXrg/";
-String timeStampPath = "/users/assignments/-L5ohOlG020TA2K3tXrg/currentTime";
+String dataPath = "/users/Ar07J0EG9hWlUwQvTBEeH0pvMXu2/data/-L5ohOlG020TA2K3tXrg/";
+String timeStampPath = "/users/Ar07J0EG9hWlUwQvTBEeH0pvMXu2/assignments/-L5ohOlG020TA2K3tXrg/currentTime";
 
 String databaseTime = "";
 unsigned long startTime = 0;
 
+long tim = 0;
 
 
 void setup() {
@@ -27,22 +28,35 @@ void setup() {
 
   // connect to wifi.
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("connecting");
+  #ifdef DEBUG
+    Serial.print("connecting");
+  #endif
   while (WiFi.status() != WL_CONNECTED) {
-    #if defined(DEBUG) || defined(TRANSMIT)
+#ifdef DEBUG
     Serial.print(".");
-    #endif
+#endif
+
+#ifdef TRANSMIT
+  if((millis() - tim) > 1000)
+  {
+    Serial.print("/disconnected\\");
+    tim = millis();
+  }
+    
+#endif
     delay(500);
   }
-  #ifdef DEBUG
-    Serial.println();
-    Serial.print("connected: ");
-    Serial.println(WiFi.localIP());
-  #endif
-  
-   #ifdef TRANSMIT
-    Serial.print("/connected");
-  #endif
+#ifdef DEBUG
+  Serial.println();
+  Serial.print("connected: ");
+  Serial.println(WiFi.localIP());
+#endif
+
+#ifdef TRANSMIT
+  Serial.print("/connected\\");
+#endif
+
+  delay(100);
 
   Firebase.begin(FIREBASE_HOST, ""); // FIREBASE_AUTH);
 
@@ -55,16 +69,37 @@ void setup() {
   Firebase.set(timeStampPath, timeStampObject);
   if (Firebase.failed())
   {
+#ifdef DEBUG
+    Serial.print("Error setting DateTime: ");
+    Serial.println(Firebase.error());
+#endif
+
+        //Try again!
+        Firebase.set(timeStampPath, timeStampObject); 
+        if (Firebase.failed())
+        {
     #ifdef DEBUG
-      Serial.print("Error setting DateTime: ");
-      Serial.println(Firebase.error());
+          Serial.print("Error setting DateTime: ");
+          Serial.println(Firebase.error());
     #endif
     
-    return;
-  } else {
-    #ifdef DEBUG
-      Serial.println("Uploaded");
+    #ifdef TRANSMIT
+          Serial.print("/noTimeStamp\\");
     #endif
+          return;
+        } 
+        else
+        {
+    #ifdef DEBUG
+          Serial.println("Uploaded");
+    #endif
+        } 
+  } 
+  else 
+  {
+#ifdef DEBUG
+    Serial.println("Uploaded");
+#endif
   }
 
 
@@ -72,31 +107,31 @@ void setup() {
   FirebaseObject fbj = Firebase.get(timeStampPath); //Using the Firebase.get function, a FirebaseObject value is returned (similar to stock Firebase's "Snapshot")
   if (Firebase.failed()) // Checks if operation failed
   {
-    #ifdef DEBUG
-      Serial.print("Error Getting Object: ");
-      Serial.println(Firebase.error());
-    #endif
-    
+#ifdef DEBUG
+    Serial.print("Error Getting Object: ");
+    Serial.println(Firebase.error());
+#endif
+
     return;
   } else {
-    #ifdef DEBUG
-      Serial.println("Retrieved Timestamp!");
-    #endif
+#ifdef DEBUG
+    Serial.println("Retrieved Timestamp!");
+#endif
   }
 
   JsonObject& timeStampObj = timeStampBuffer.createObject();
   timeStampObj["timestamp"] = fbj.getJsonVariant();
   //Serial.print("TimeStamp = "); timeStampObj["timestamp"].printTo(Serial);Serial.println();
   databaseTime = timeStampObj.get<String>("timestamp");
-  
+
   String temp = databaseTime.substring(3);
   //Serial.print("temp = ");Serial.println(temp);
   char charStr[50] ;
-  temp.toCharArray(charStr,sizeof(charStr));
+  temp.toCharArray(charStr, sizeof(charStr));
   //Serial.print("charStr = ");Serial.println(charStr);
   startTime = strtoul (charStr, NULL, 0); //COnverts string to unsigned Long
   //Serial.print("startTime = ");Serial.println(startTime);
- 
+
 }
 //############# Setup Ends Here ####################
 
@@ -128,30 +163,30 @@ void loop()
     }
 
     unsigned long d = (timeStamp + startTime);
-    String newDataPath = dataPath + databaseTime.substring(0,3) + d ;//(timeStamp + startTime);
-    #ifdef DEBUG
-      Serial.print("newDataPath: ");Serial.println(newDataPath);
-      Serial.print("root: ");root.printTo(Serial);Serial.println();
-    #endif  
+    String newDataPath = dataPath + databaseTime.substring(0, 3) + d ; //(timeStamp + startTime);
+#ifdef DEBUG
+    Serial.print("newDataPath: "); Serial.println(newDataPath);
+    Serial.print("root: "); root.printTo(Serial); Serial.println();
+#endif
     Firebase.set(newDataPath, root);
     if (Firebase.failed())
     {
-      #ifdef DEBUG
-        Serial.print("Data Transmission Failed: ");
-        Serial.println(Firebase.error());
-      #endif
+#ifdef DEBUG
+      Serial.print("Data Transmission Failed: ");
+      Serial.println(Firebase.error());
+#endif
       return;
-    }else
+    } else
     {
-      #ifdef DEBUG
-        Serial.println("Data Transmitted");
-      #endif
+#ifdef DEBUG
+      Serial.println("Data Transmitted");
+#endif
     }
     sensorNum = 0;
   }
 
-//1234|A0.1,0.2,0.3,0.4,B0.5,0.6,0.7,0.8,C0.9,1.0,1.1,1.2,D1.3,1.4,1.5,1.6,E1.7,1.8,1.9,2.0,F2.1,2.2,2.3,2.4,G2.5,2.6,2.7,2.8,
-  
+  //1234|A0.1,0.2,0.3,0.4,B0.5,0.6,0.7,0.8,C0.9,1.0,1.1,1.2,D1.3,1.4,1.5,1.6,E1.7,1.8,1.9,2.0,F2.1,2.2,2.3,2.4,G2.5,2.6,2.7,2.8,
+
   if (Serial.available() > 0)
   {
     chr = Serial.read();
@@ -227,5 +262,5 @@ void loop()
       str += chr;
     }
   }
-  
+
 }
