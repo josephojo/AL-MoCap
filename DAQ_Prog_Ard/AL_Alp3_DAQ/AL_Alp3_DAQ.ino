@@ -21,7 +21,7 @@
 #define TRANSMIT
 
 //Uncomment "DEBUG_CODE" to print to SD card
-//#define DEBUG_CODE
+#define DEBUG_CODE
 
 // ########### Pin Definitions ############
 #define BLUE_LED 2 // LED Indicator pin
@@ -56,7 +56,7 @@ const uint8_t PWMVal = 180;
 SentralMM sentral[NUM_IMUS];
 // Sentral control/status vars
 bool sentralReady[NUM_IMUS];
-uint8_t sentralErr[NUM_IMUS] = {0}; //, 0, 0, 0, 0, 0, 0}; // FIFO storage buffer
+uint8_t sentralErr[NUM_IMUS] = {0, 0, 0, 0, 0, 0, 0}; // FIFO storage buffer
 int eepromAddress = 0; // Calibration offsets from the eeprom are going to be stored here.
 double waitTimer[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
 uint8_t magRate = 30;
@@ -128,14 +128,6 @@ void setup()
   while (!Serial); // wait for Arduino serial to be ready
 #endif
 
- 
-
-
-  // ###########----------- Get Current Time and perhaps date ------------->
-
-  tStart = millis();
-  // <---------- Done getting Time and date --------------
-
 
   // Ensure 3 second wait for configuration file to be written to the Sentral from Sensor-Embedded EEPROM
   pause(3000); //while (millis()< 3000) {} //- tStart
@@ -172,6 +164,7 @@ void setup()
   pause(500); // Allows the sensor to update first few data in registers
 
   String tempStr = "";
+  String tTempStr = "";
   while (1)
   {
     if (Serial4.available() > 0)
@@ -190,13 +183,16 @@ void setup()
           tempStr = "";
           blinkState[0] = true;
           blinkState[1] = false;
-          break;
+          tTempStr = tempStr;
+          //break;
         }
         else if (tempStr == "disconnected")
         {
           digitalWrite(RED_LED, HIGH);
         }
-        else if (tempStr == "noTimeStamp")
+       
+        
+        if (tempStr == "noTimeStamp" && tTempStr == "connected")
         {
           digitalWrite(RED_LED, HIGH);
           while (1)
@@ -206,7 +202,12 @@ void setup()
             digitalWrite(BLUE_LED, LOW);
             delay(1000);
           }
-        } 
+        }
+        else if(tempStr == "yesTimeStamp" && tTempStr == "connected")
+        {
+          tStart = millis();
+          break; 
+        }
       }
       else
       {
@@ -276,6 +277,13 @@ void loop()
       // Send Data every 50 millisecond through WIFI
       if ((millis() - waitTimer[1]) > 50)
       { uint8_t d = 0;
+#ifdef TRANSMIT      
+      Serial4.print(millis() - tStart); Serial4.print("|");
+#endif
+
+#ifdef DEBUG_CODE
+      Serial.print(millis() - tStart); Serial.print("|");
+#endif
         for (uint8_t i = 0; i < NUM_IMUS; i++)
         {
           tcaselect(i);
@@ -306,24 +314,25 @@ void loop()
 
 #ifdef DEBUG_CODE
             //Serial.print("QW:   ");
-            Serial.print((char)(i + 65)); Serial.print(",");
+            Serial.print((char)(i + 65)); //Serial.print(",");
             Serial.print(sentral_q[i].w); Serial.print(","); //Serial.print("\t");
             //Serial.print("QX:   ");
             Serial.print(sentral_q[i].x); Serial.print(",");
             //Serial.print("QY:   ");
             Serial.print(sentral_q[i].y); Serial.print(",");
             //Serial.print("QZ:   ");
-            Serial.print(sentral_q[i].z);
-            if (i < NUM_IMUS - 1)
-              Serial.print("/");
-            else if (i >= NUM_IMUS - 1)
+            Serial.print(sentral_q[i].z); Serial.print(",");
+//            if (i < NUM_IMUS - 1)
+//              Serial.print("/");
+//            else 
+            if (i >= NUM_IMUS - 1)
               Serial.println();
 #endif
 
             joint_q[i] = s2j_q[i].getProduct(sentral_q[i]); // This line gets the true rotations of the joints based on the relationship with initial orien and sentral orien
 
 #ifdef TRANSMIT
-            Serial4.print(millis() - tStart); Serial4.print("|");
+            
             Serial4.print((char)(i + 65)); //Serial.print(",");
             Serial4.print(joint_q[i].w); Serial4.print(","); //Serial.print("\t");
             Serial4.print(joint_q[i].x); Serial4.print(",");
@@ -380,6 +389,10 @@ void setupSensor(int i)
     }
 #endif
   } else {
+    #ifdef DEBUG_CODE
+    Serial.print("Sensor Initialized! - ");
+    Serial.println((char)(i + 65));
+    #endif
     sentralReady[i] = true;
   }
 

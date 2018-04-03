@@ -69,37 +69,45 @@ void setup() {
   Firebase.set(timeStampPath, timeStampObject);
   if (Firebase.failed())
   {
-#ifdef DEBUG
-    Serial.print("Error setting DateTime: ");
-    Serial.println(Firebase.error());
-#endif
+    #ifdef DEBUG
+        Serial.print("Error setting DateTime: ");
+        Serial.println(Firebase.error());
+    #endif
 
-        //Try again!
-        Firebase.set(timeStampPath, timeStampObject); 
-        if (Firebase.failed())
-        {
-    #ifdef DEBUG
-          Serial.print("Error setting DateTime: ");
-          Serial.println(Firebase.error());
-    #endif
-    
-    #ifdef TRANSMIT
-          Serial.print("/noTimeStamp\\");
-    #endif
-          return;
-        } 
-        else
-        {
-    #ifdef DEBUG
-          Serial.println("Uploaded");
-    #endif
-        } 
+    //Try again!
+    Firebase.set(timeStampPath, timeStampObject); 
+    if (Firebase.failed())
+    {
+      #ifdef DEBUG
+            Serial.print("Error setting DateTime: ");
+            Serial.println(Firebase.error());
+      #endif
+      
+      #ifdef TRANSMIT
+            Serial.print("/noTimeStamp\\");
+      #endif
+      return;
+    } 
+    else
+    {
+      #ifdef DEBUG
+            Serial.println("Uploaded");
+      #endif
+
+      #ifdef TRANSMIT
+            Serial.print("/yesTimeStamp\\");
+      #endif
+    } 
   } 
   else 
   {
-#ifdef DEBUG
-    Serial.println("Uploaded");
-#endif
+    #ifdef DEBUG
+        Serial.println("Uploaded");
+    #endif
+    
+    #ifdef TRANSMIT
+        Serial.print("/yesTimeStamp\\");
+    #endif
   }
 
 
