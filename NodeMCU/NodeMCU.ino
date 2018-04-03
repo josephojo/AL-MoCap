@@ -11,7 +11,7 @@
 
 //#define DEBUG
 
- #define TRANSMIT
+#define TRANSMIT
 
 String dataPath = "/users/Ar07J0EG9hWlUwQvTBEeH0pvMXu2/data/-L5ohOlG020TA2K3tXrg/";
 String timeStampPath = "/users/Ar07J0EG9hWlUwQvTBEeH0pvMXu2/assignments/-L5ohOlG020TA2K3tXrg/currentTime";
@@ -28,21 +28,21 @@ void setup() {
 
   // connect to wifi.
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  #ifdef DEBUG
-    Serial.print("connecting");
-  #endif
+#ifdef DEBUG
+  Serial.print("connecting");
+#endif
   while (WiFi.status() != WL_CONNECTED) {
 #ifdef DEBUG
     Serial.print(".");
 #endif
 
 #ifdef TRANSMIT
-  if((millis() - tim) > 1000)
-  {
-    Serial.print("/disconnected\\");
-    tim = millis();
-  }
-    
+    if ((millis() - tim) > 1000)
+    {
+      Serial.print("/disconnected\\");
+      tim = millis();
+    }
+
 #endif
     delay(500);
   }
@@ -69,45 +69,45 @@ void setup() {
   Firebase.set(timeStampPath, timeStampObject);
   if (Firebase.failed())
   {
-    #ifdef DEBUG
-        Serial.print("Error setting DateTime: ");
-        Serial.println(Firebase.error());
-    #endif
+#ifdef DEBUG
+    Serial.print("Error setting DateTime: ");
+    Serial.println(Firebase.error());
+#endif
 
     //Try again!
-    Firebase.set(timeStampPath, timeStampObject); 
+    Firebase.set(timeStampPath, timeStampObject);
     if (Firebase.failed())
     {
-      #ifdef DEBUG
-            Serial.print("Error setting DateTime: ");
-            Serial.println(Firebase.error());
-      #endif
-      
-      #ifdef TRANSMIT
-            Serial.print("/noTimeStamp\\");
-      #endif
+#ifdef DEBUG
+      Serial.print("Error setting DateTime: ");
+      Serial.println(Firebase.error());
+#endif
+
+#ifdef TRANSMIT
+      Serial.print("/noTimeStamp\\");
+#endif
       return;
-    } 
+    }
     else
     {
-      #ifdef DEBUG
-            Serial.println("Uploaded");
-      #endif
+#ifdef DEBUG
+      Serial.println("Uploaded");
+#endif
 
-      #ifdef TRANSMIT
-            Serial.print("/yesTimeStamp\\");
-      #endif
-    } 
-  } 
-  else 
+#ifdef TRANSMIT
+      Serial.print("/yesTimeStamp\\");
+#endif
+    }
+  }
+  else
   {
-    #ifdef DEBUG
-        Serial.println("Uploaded");
-    #endif
-    
-    #ifdef TRANSMIT
-        Serial.print("/yesTimeStamp\\");
-    #endif
+#ifdef DEBUG
+    Serial.println("Uploaded");
+#endif
+
+#ifdef TRANSMIT
+    Serial.print("/yesTimeStamp\\");
+#endif
   }
 
 
@@ -144,8 +144,6 @@ void setup() {
 //############# Setup Ends Here ####################
 
 
-StaticJsonBuffer<1024> sensorBuff; // used to create data Json objects
-
 int quatNum = 0;
 int sensorNum = 0;
 long timeStamp = 0;
@@ -158,40 +156,7 @@ char chr;
 int y = 0;
 void loop()
 {
-  if (sensorNum == 7 && quatNum == 4)
-  {
-    JsonObject& root = sensorBuff.createObject();// SensorId level ("DateTime" : {A,B,C,D,E,F,G})
-    for (int i = 0; i < sensorNum; i++)
-    {
-      JsonObject& nested = root.createNestedObject(sensorID[i]); // ... => sensorObj //(String)((char)(i + 65)));
-      nested["qw"] = quats[i][0];
-      nested["qx"] = quats[i][1];
-      nested["qy"] = quats[i][2];
-      nested["qz"] = quats[i][3];
-    }
 
-    unsigned long d = (timeStamp + startTime);
-    String newDataPath = dataPath + databaseTime.substring(0, 3) + d ; //(timeStamp + startTime);
-#ifdef DEBUG
-    Serial.print("newDataPath: "); Serial.println(newDataPath);
-    Serial.print("root: "); root.printTo(Serial); Serial.println();
-#endif
-    Firebase.set(newDataPath, root);
-    if (Firebase.failed())
-    {
-#ifdef DEBUG
-      Serial.print("Data Transmission Failed: ");
-      Serial.println(Firebase.error());
-#endif
-      return;
-    } else
-    {
-#ifdef DEBUG
-      Serial.println("Data Transmitted");
-#endif
-    }
-    sensorNum = 0;
-  }
 
   //1234|A0.1,0.2,0.3,0.4,B0.5,0.6,0.7,0.8,C0.9,1.0,1.1,1.2,D1.3,1.4,1.5,1.6,E1.7,1.8,1.9,2.0,F2.1,2.2,2.3,2.4,G2.5,2.6,2.7,2.8,
 
@@ -250,6 +215,10 @@ void loop()
     else if (chr == ',')
     {
       quats[sensorNum - 1][quatNum] = str.toFloat();
+      #ifdef DEBUG
+      Serial.print("str: "); Serial.println(str);
+      Serial.print("quatNum: "); Serial.println(quatNum);
+      #endif
       quatNum++;
       str = "";
 
@@ -268,6 +237,44 @@ void loop()
     else
     {
       str += chr;
+    }
+
+
+    if (sensorNum == 7 && quatNum == 4)
+    {
+      StaticJsonBuffer<1024> sensorBuff; // used to create data Json objects
+      JsonObject& root = sensorBuff.createObject();// SensorId level ("DateTime" : {A,B,C,D,E,F,G})
+      for (int i = 0; i < sensorNum; i++)
+      {
+        JsonObject& nested = root.createNestedObject(sensorID[i]); // ... => sensorObj //(String)((char)(i + 65)));
+        nested["qw"] = quats[i][0];
+        nested["qx"] = quats[i][1];
+        nested["qy"] = quats[i][2];
+        nested["qz"] = quats[i][3];
+      }
+
+      unsigned long d = (timeStamp + startTime);
+      String newDataPath = dataPath + databaseTime.substring(0, 3) + d ;
+#ifdef DEBUG
+      Serial.print("newDataPath: "); Serial.println(newDataPath);
+      Serial.print("root: "); root.printTo(Serial); Serial.println();
+#endif
+      Firebase.set(newDataPath, root);
+      if (Firebase.failed())
+      {
+#ifdef DEBUG
+        Serial.print("Data Transmission Failed: ");
+        Serial.println(Firebase.error());
+#endif
+        return;
+      } else
+      {
+#ifdef DEBUG
+        Serial.println("Data Transmitted");
+#endif
+      }
+      sensorNum = 0;
+      //sensorBuff.clear();
     }
   }
 
