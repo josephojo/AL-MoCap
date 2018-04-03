@@ -845,7 +845,7 @@ public class RunAlgorithms : MonoBehaviour
     // Occurence Stuff
     Dictionary<string, Dictionary<string, object>> occDics = new Dictionary<string, Dictionary<string, object>>();
 
-    MovieRecorder mRec = new MovieRecorder();
+    // MovieRecorder mRec = new MovieRecorder();
 
     int cummDataCount = 0;
     double cummERMScore = 0.0;
@@ -865,7 +865,7 @@ public class RunAlgorithms : MonoBehaviour
     void Start()
     {
         Debug.Log("Started");
-        
+
 
         #region Updates time on server and then reveiceves the value of time and prints it out (Testing)
         //Dictionary<string, object> dic = new Dictionary<string, object>();
@@ -919,16 +919,17 @@ public class RunAlgorithms : MonoBehaviour
 
 
         #region Pushes a set of dummy sensor Data to the server
-        t = new Thread(() =>
-        {
-            PushDummySenData();
-        });
-        t.Start();
+        //t = new Thread(() =>
+        //{
+        //    PushDummySenData();
+        //});
+        //t.Start();
         #endregion
 
         //GrabDateTime();
 
         GrabAnalysisInfo();
+        Debug.Log("Grabbed Analysis Info");
 
         //DatabaseManager.DeleteAllData();
 
@@ -1052,68 +1053,138 @@ public class RunAlgorithms : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (DatabaseManager.DataChanged == true) //(i >= DatabaseManager.Data.Count && DatabaseManager.DataChanged == true)
+        #region Older Stuff - No Queue
+        //if (DatabaseManager.DataChanged == true) //(i >= DatabaseManager.Data.Count && DatabaseManager.DataChanged == true)
+        //{
+        //    data = DatabaseManager.Data;
+        //    dbStamp = DatabaseManager.DTStamp;
+        //    DatabaseManager.DataChanged = false;
+        //    cummDataCount++;
+        //    updateCouter++;
+        //}
+
+        //if (data.Count == 7) //data.Count != 0)
+        //{
+        //    Joints[0].transform.rotation = SensData2Quat(data[0]);
+        //    Joints[1].transform.rotation = SensData2Quat(data[1]);
+        //    Joints[2].transform.rotation = SensData2Quat(data[2]);
+        //    Joints[3].transform.rotation = SensData2Quat(data[3]);
+        //    Joints[4].transform.rotation = SensData2Quat(data[4]);
+        //    Joints[5].transform.rotation = SensData2Quat(data[5]);
+        //    Joints[6].transform.rotation = SensData2Quat(data[6]);
+
+        //    for (int z = 0; z < num_joints; z++)
+        //    {
+        //        jointPos[z] = Joints[z].transform.position;
+        //    }
+
+        //    bool[] risky = new bool[3];
+        //    risky[0] = erm.checkBack((jointPos[2].z - jointPos[3].z) * 1000); // Compares the difference between waist location and neckish location and triggers risk when less than limit (Bending)
+        //    risky[1] = erm.checkElbow_L((jointPos[0].z - jointPos[1].z) * 1000); // Compares the difference between Left elbow location and Left shou (waist) location and triggers risk when less than limit (Bending)
+        //    risky[2] = erm.checkElbow_R((jointPos[6].z - jointPos[5].z) * 1000); // Compares the difference between shoulder location and back (waist) location and triggers risk when less than limit (Bending)
+
+        //    if (risky[0] || risky[1] || risky[2])
+        //    {
+        //        //Debug.Log("Risky 0 : " + risky[0]);
+        //        //Debug.Log("Risky 1 : " + risky[1]);
+        //        //Debug.Log("Risky 2 : " + risky[2]);
+        //        cummERMScore += erm.ERM_Risk;
+
+        //        Dictionary<string, object> dit = new Dictionary<string, object>();
+        //        dit.Add("ermScore", erm.ERM_Risk);
+        //        string x = ((Convert.ToUInt64(DatabaseManager.DTStamp))).ToString();
+        //        //Debug.LogFormat("X: {0}\ti: {1}", x, i);
+        //        try
+        //        {
+        //            occDics.Add(x, dit); // "+ (i*50)" is used to determine the approx time of the sub-captures assuming 50ms per sub-capture
+        //        }
+        //        catch (ArgumentException AE)
+        //        {
+        //            Debug.LogError("key: " + x + " : " + AE.Message);
+        //        }
+        //        //occDics[DatabaseManager.DTStamp].Add("gif", );
+        //        //updateRiskOcc();
+        //    }
+
+        //    if (updateCouter >= 50)
+        //    {
+        //        updateCouter = 0;
+        //        updateRiskOcc();
+        //    }
+
+        //    data.Clear();
+        //}
+        #endregion
+
+        #region Uses Queue
+        if (DatabaseManager.InputQ.Count > 0 && DatabaseManager.DataChanged == true) //(i >= DatabaseManager.Data.Count && DatabaseManager.DataChanged == true)
         {
-            data = DatabaseManager.Data;
-            dbStamp = DatabaseManager.DTStamp;
+            data = DatabaseManager.InputQ.Dequeue();
+            dbStamp = DatabaseManager.InputQTime.Dequeue();
             DatabaseManager.DataChanged = false;
             cummDataCount++;
             updateCouter++;
-        }
 
-        if (data.Count == 7) //data.Count != 0)
-        {
-            Joints[0].transform.rotation = SensData2Quat(data[0]);
-            //Joints[1].transform.rotation = SensData2Quat(data[1]);
-            //Joints[2].transform.rotation = SensData2Quat(data[2]);
-            //Joints[3].transform.rotation = SensData2Quat(data[3]);
-            //Joints[4].transform.rotation = SensData2Quat(data[4]);
-            //Joints[5].transform.rotation = SensData2Quat(data[5]);
-            //Joints[6].transform.rotation = SensData2Quat(data[6]);
 
-            for (int z = 0; z < num_joints; z++)
+            if (data.Count == 7) //data.Count != 0)
             {
-                jointPos[z] = Joints[z].transform.position;
-            }
+                //Joints[0].transform.rotation = SensData2Quat(data[0]);
+                //Joints[1].transform.rotation = SensData2Quat(data[1]);
+                //Joints[2].transform.rotation = SensData2Quat(data[2]);
+                //Joints[3].transform.rotation = SensData2Quat(data[3]);
+                //Joints[4].transform.rotation = SensData2Quat(data[4]);
+                Joints[5].transform.rotation = SensData2Quat(data[5]);
+                Joints[6].transform.rotation = SensData2Quat(data[6]);
 
-            bool[] risky = new bool[3];
-            risky[0] = erm.checkBack((jointPos[2].z - jointPos[3].z) * 1000); // Compares the difference between waist location and neckish location and triggers risk when less than limit (Bending)
-            risky[1] = erm.checkElbow_L((jointPos[0].z - jointPos[1].z) * 1000); // Compares the difference between Left elbow location and Left shou (waist) location and triggers risk when less than limit (Bending)
-            risky[2] = erm.checkElbow_R((jointPos[6].z - jointPos[5].z) * 1000); // Compares the difference between shoulder location and back (waist) location and triggers risk when less than limit (Bending)
+                Debug.LogFormat("Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[5]).w, SensData2Quat(data[5]).x, SensData2Quat(data[5]).y, SensData2Quat(data[5]).z);
 
-            if (risky[0] || risky[1] || risky[2])
-            {
-                //Debug.Log("Risky 0 : " + risky[0]);
-                //Debug.Log("Risky 1 : " + risky[1]);
-                //Debug.Log("Risky 2 : " + risky[2]);
-                cummERMScore += erm.ERM_Risk;
-
-                Dictionary<string, object> dit = new Dictionary<string, object>();
-                dit.Add("ermScore", erm.ERM_Risk);
-                string x = ((Convert.ToUInt64(DatabaseManager.DTStamp))).ToString();
-                //Debug.LogFormat("X: {0}\ti: {1}", x, i);
-                try
+                for (int z = 0; z < num_joints; z++)
                 {
-                    occDics.Add(x, dit); // "+ (i*50)" is used to determine the approx time of the sub-captures assuming 50ms per sub-capture
+                    jointPos[z] = Joints[z].transform.position;
                 }
-                catch (ArgumentException AE)
+
+                bool[] risky = new bool[3];
+                risky[0] = erm.checkBack((jointPos[2].z - jointPos[3].z) * 1000); // Compares the difference between waist location and neckish location and triggers risk when less than limit (Bending)
+                risky[1] = erm.checkElbow_L((jointPos[0].z - jointPos[1].z) * 1000); // Compares the difference between Left elbow location and Left shou (waist) location and triggers risk when less than limit (Bending)
+                risky[2] = erm.checkElbow_R((jointPos[6].z - jointPos[5].z) * 1000); // Compares the difference between shoulder location and back (waist) location and triggers risk when less than limit (Bending)
+
+                if (risky[0] || risky[1] || risky[2])
                 {
-                    Debug.LogError("key: " + x + " : " + AE.Message);
+                    //Debug.Log("Risky 0 : " + risky[0]);
+                    //Debug.Log("Risky 1 : " + risky[1]);
+                    //Debug.Log("Risky 2 : " + risky[2]);
+                    cummERMScore += erm.ERM_Risk;
+
+                    Dictionary<string, object> dit = new Dictionary<string, object>();
+                    dit.Add("ermScore", erm.ERM_Risk);
+                    string x = dbStamp.ToString();
+                    //Debug.LogFormat("X: {0}\ti: {1}", x, i);
+                    try
+                    {
+                        occDics.Add(x, dit); // "+ (i*50)" is used to determine the approx time of the sub-captures assuming 50ms per sub-capture
+                    }
+                    catch (ArgumentException AE)
+                    {
+                        Debug.LogError("key: " + x + " : " + AE.Message);
+                    }
+                    //occDics[DatabaseManager.DTStamp].Add("gif", );
+                    //updateRiskOcc();
                 }
-                //occDics[DatabaseManager.DTStamp].Add("gif", );
-                //updateRiskOcc();
-            }
 
-            if (updateCouter >= 50)
-            {
-                updateCouter = 0;
-                updateRiskOcc();
-            }
+                if (updateCouter >= 100)
+                {
+                    //updateCouter = 0;
+                    // t = new Thread(() =>
+                    // {
+                    //     updateRiskOcc();
+                    // });
+                    //t.Start();
+                }
 
-            data.Clear();
+                data.Clear();
+            }
         }
-
-
+        #endregion
     }
 
     DateTime Milli2DateTime(string milli)
@@ -1208,8 +1279,8 @@ public class RunAlgorithms : MonoBehaviour
         totalOccDic.Add("totalDataCount", count);
         totalOccDic.Add("totalErmScore", Math.Round(score, 2));
 
-        Debug.Log("In update - count: " + count);
-        Debug.Log("In update - score: " + score);
+        //Debug.Log("In update - count: " + count);
+        //Debug.Log("In update - score: " + score);
 
         Router.AssesmentWithID(Router.AID).UpdateChildrenAsync(totalOccDic).ContinueWith(tk =>
         {
@@ -1220,7 +1291,7 @@ public class RunAlgorithms : MonoBehaviour
             }
             else if (tk.IsCompleted)
             {
-                Debug.LogFormat("Clearing Update - count: {0}   score: {1}", count, score);
+                //Debug.LogFormat("Clearing Update - count: {0}   score: {1}", count, score);
 
             }
         });
@@ -1242,7 +1313,7 @@ public class RunAlgorithms : MonoBehaviour
 
     Quaternion SensData2Quat(SensorData sens)
     {
-        return new Quaternion(sens.Qx, sens.Qy, sens.Qz, sens.Qw);
+        return new Quaternion((float)Math.Round(sens.Qx, 2), (float)Math.Round(sens.Qy, 2), (float)Math.Round(sens.Qz, 2), (float)Math.Round(sens.Qw, 2));
     }
 
     void GrabDateTime()

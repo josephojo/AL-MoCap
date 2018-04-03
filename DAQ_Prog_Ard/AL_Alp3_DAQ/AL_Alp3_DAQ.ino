@@ -20,8 +20,8 @@
 //Uncomment "WRITE_TO_CLOUD" to print to SD card
 #define TRANSMIT
 
-//Uncomment "DEBUG_CODE" to print to SD card
-#define DEBUG_CODE
+//Uncomment "DEBUG" to print to SD card
+#define DEBUG
 
 // ########### Pin Definitions ############
 #define BLUE_LED 2 // LED Indicator pin
@@ -59,9 +59,9 @@ bool sentralReady[NUM_IMUS];
 uint8_t sentralErr[NUM_IMUS] = {0, 0, 0, 0, 0, 0, 0}; // FIFO storage buffer
 int eepromAddress = 0; // Calibration offsets from the eeprom are going to be stored here.
 double waitTimer[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
-uint8_t magRate = 30;
-uint8_t accelRate = 4;
-uint8_t gyroRate = 2;
+uint8_t magRate = 100; //30;
+uint8_t accelRate = 10; //4;
+uint8_t gyroRate = 10; //4; //2;
 uint8_t quatDivisor = 1;
 
 // orientation/motion vars
@@ -118,14 +118,14 @@ void setup()
   // ########## Begins Wifi module protocol if Transmit is defined
 
   // Displays extra info through wifi module to Debug the code
-#ifdef DEBUG_CODE
+#ifdef DEBUG
   Serial.begin(9600);
-  while (!Serial); // wait for Arduino serial to be ready
+  //while (!Serial); // wait for Arduino serial to be ready
 #endif
 
 #ifdef TRANSMIT
   Serial4.begin(9600);
-  while (!Serial); // wait for Arduino serial to be ready
+  //while (!Serial); // wait for Arduino serial to be ready
 #endif
 
 
@@ -147,7 +147,7 @@ void setup()
     EEPROM.get(eepromAddress, initial_q[i].z); eepromAddress += 4;
 
 
-#ifdef DEBUG_CODE
+#ifdef DEBUG
     //    Serial.print((char)(i + 65)); Serial.print(",");
     //    Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
     //    Serial.print(initial_q[i].x); Serial.print(",");
@@ -179,11 +179,11 @@ void setup()
       else if (chr == '\\')
       { Serial.print("tempStr: "); Serial.println(tempStr);
         if (tempStr == "connected")
-        {
-          tempStr = "";
-          blinkState[0] = true;
-          blinkState[1] = false;
+        {          
           tTempStr = tempStr;
+          tempStr = "";
+//          blinkState[0] = true;
+//          blinkState[1] = false;
           //break;
         }
         else if (tempStr == "disconnected")
@@ -205,7 +205,12 @@ void setup()
         }
         else if(tempStr == "yesTimeStamp" && tTempStr == "connected")
         {
+          Serial.println("yesTimeStamp and Connected");
           tStart = millis();
+          blinkState[0] = true;
+          blinkState[1] = false;
+          digitalWrite(BLUE_LED, blinkState[0]);
+          digitalWrite(RED_LED, blinkState[1]);
           break; 
         }
       }
@@ -216,8 +221,6 @@ void setup()
     }
   
   }
-//blinkState[0] = true;
-//blinkState[1] = false;
 
  // ##############----------- INTERRUPT ATTACH ------------------->
   attachInterrupt(digitalPinToInterrupt(BUTTON_INT), calibrateData, LOW);
@@ -231,8 +234,9 @@ void setup()
 
 
   // <------------ INTERRUPT ATTACH END --------------
-  
-//Serial.println("Out!");
+  #ifdef DEBUG
+Serial.println("Out!");
+#endif
 }
 
 bool calibratedOnce = false;
@@ -274,14 +278,14 @@ void loop()
       }
 
 
-      // Send Data every 50 millisecond through WIFI
-      if ((millis() - waitTimer[1]) > 50)
-      { uint8_t d = 0;
+      // Get Data every 50 millisecond through WIFI
+      if ((millis() - waitTimer[1]) > 200)
+      {
 #ifdef TRANSMIT      
       Serial4.print(millis() - tStart); Serial4.print("|");
 #endif
 
-#ifdef DEBUG_CODE
+#ifdef DEBUG
       Serial.print(millis() - tStart); Serial.print("|");
 #endif
         for (uint8_t i = 0; i < NUM_IMUS; i++)
@@ -312,16 +316,33 @@ void loop()
           {
             sentral[i].getQuat(&sentral_q[i]);
 
-#ifdef DEBUG_CODE
+#ifdef DEBUG
+//            //Serial.print("QW:   ");
+//            Serial.print((char)(i + 65)); //Serial.print(",");
+//            Serial.print(sentral_q[i].w); Serial.print(","); //Serial.print("\t");
+//            //Serial.print("QX:   ");
+//            Serial.print(sentral_q[i].x); Serial.print(",");
+//            //Serial.print("QY:   ");
+//            Serial.print(sentral_q[i].y); Serial.print(",");
+//            //Serial.print("QZ:   ");
+//            Serial.print(sentral_q[i].z); Serial.print(",");
+////            if (i < NUM_IMUS - 1)
+////              Serial.print("/");
+////            else 
+//            if (i >= NUM_IMUS - 1)
+//              Serial.println();
+#endif
+
+#ifdef DEBUG
             //Serial.print("QW:   ");
             Serial.print((char)(i + 65)); //Serial.print(",");
-            Serial.print(sentral_q[i].w); Serial.print(","); //Serial.print("\t");
+            Serial.print(joint_q[i].w); Serial.print(","); //Serial.print("\t");
             //Serial.print("QX:   ");
-            Serial.print(sentral_q[i].x); Serial.print(",");
+            Serial.print(joint_q[i].x); Serial.print(",");
             //Serial.print("QY:   ");
-            Serial.print(sentral_q[i].y); Serial.print(",");
+            Serial.print(joint_q[i].y); Serial.print(",");
             //Serial.print("QZ:   ");
-            Serial.print(sentral_q[i].z); Serial.print(",");
+            Serial.print(joint_q[i].z); Serial.print(",");
 //            if (i < NUM_IMUS - 1)
 //              Serial.print("/");
 //            else 
@@ -332,16 +353,12 @@ void loop()
             joint_q[i] = s2j_q[i].getProduct(sentral_q[i]); // This line gets the true rotations of the joints based on the relationship with initial orien and sentral orien
 
 #ifdef TRANSMIT
-            
-            Serial4.print((char)(i + 65)); //Serial.print(",");
-            Serial4.print(joint_q[i].w); Serial4.print(","); //Serial.print("\t");
+   // Data Format: 24593|A0.03,0.94,-0.32,0.15,B0.18,-0.07,-0.46,0.87,C0.71,0.60,-0.22,-0.30,D0.32,-0.18,0.23,0.90,E0.16,-0.76,-0.63,0.02,F0.36,0.06,0.07,0.93,G0.03,-0.83,-0.55,0.02,
+            Serial4.print((char)(i + 65));
+            Serial4.print(joint_q[i].w); Serial4.print(",");
             Serial4.print(joint_q[i].x); Serial4.print(",");
             Serial4.print(joint_q[i].y); Serial4.print(",");
             Serial4.print(joint_q[i].z); Serial4.print(",");
-            //            if (i < NUM_IMUS - 1)
-            //              Serial.print("/");
-            //            else if (i >= NUM_IMUS - 1)
-            //              Serial.println();
 #endif
 
           } else
@@ -354,7 +371,7 @@ void loop()
 
       if ((millis() - timer) > 120000)
       {
-        digitalWrite(BLUE_LED, LOW);
+        digitalWrite(BLUE_LED, HIGH);
         digitalWrite(RED_LED, LOW);
         while (1) {}
       }
@@ -380,16 +397,24 @@ void setupSensor(int i)
 
   // Check to see if there was an error in initialization
   if (init_val != 0) {
-#ifdef DEBUG_CODE
+#ifdef DEBUG
     while (1) {
       Serial.print("Failed to Initialize sensor ");
       Serial.print((char)(i + 65));
       Serial.print(" . Error Value is: ");
       Serial.println(init_val);
+      if ((millis() - waitTimer[0]) > 200) // blink LED to indicate activity
+      {
+        blinkState[0] = false;
+        blinkState[1] = !blinkState[1];
+        digitalWrite(BLUE_LED, blinkState[0]);
+        digitalWrite(RED_LED, blinkState[1]);
+        waitTimer[0] = millis();
+      }
     }
 #endif
   } else {
-    #ifdef DEBUG_CODE
+    #ifdef DEBUG
     Serial.print("Sensor Initialized! - ");
     Serial.println((char)(i + 65));
     #endif
@@ -429,24 +454,32 @@ void calibrateData()
 
 void checkINT0() {
   sentralErr[0] = 1;
+  Serial.println("Interrupt A triggered");
 }
 void checkINT1() {
   sentralErr[1] = 1;
+  Serial.println("Interrupt B triggered");
 }
 void checkINT2() {
   sentralErr[2] = 1;
+  Serial.println("Interrupt C triggered");
+
 }
 void checkINT3() {
   sentralErr[3] = 1;
+  Serial.println("Interrupt D triggered");
 }
 void checkINT4() {
   sentralErr[4] = 1;
+  Serial.println("Interrupt E triggered");
 }
 void checkINT5() {
   sentralErr[5] = 1;
+  Serial.println("Interrupt F triggered");
 }
 void checkINT6() {
   sentralErr[6] = 1;
+  Serial.println("Interrupt G triggered");
 }
 
 
@@ -481,7 +514,7 @@ void calData2User()
       // if programming failed, don't try to do anything
       if (!sentralReady[i])
       {
-#ifdef DEBUG_CODE
+#ifdef DEBUG
         Serial.println("User Calibration: Sentral Not Ready!");
 #endif
         return;
@@ -494,11 +527,11 @@ void calData2User()
 
       if ((eventStatus & 0x01) == 0x01)
       {
-#ifdef DEBUG_CODE
+#ifdef DEBUG
         Serial.println("User Calibration: Sentral still starting!");
 #endif
         sentral[i].restartSentral();
-        pause(100);
+        pause(1000);
         setupSensor(i);
         eventStatus = sentral[i].getIntStatus();
         pause(60);
@@ -506,11 +539,12 @@ void calData2User()
       }
       else if ((eventStatus & 0x02) == 0x02) //If there's an error status, restart the sentral
       {
-#ifdef DEBUG_CODE
+#ifdef DEBUG
         Serial.println("User Calibration: Sentral Has Error!");
 #endif
+        troubleshoot_Err(i);
         sentral[i].restartSentral();
-        pause(100);
+        pause(1000);
         setupSensor(i);
         //eventStatus = sentral[i].getIntStatus();
         s--;
@@ -521,7 +555,7 @@ void calData2User()
       ((eventStatus & 0x04) == 0x04)
       {
         sentral[i].getQuat(&q[s]);
-#ifdef DEBUG_CODE
+#ifdef DEBUG
         Serial.print("QW: ");
         Serial.print(q[s].w); Serial.print("\t");
         Serial.print("QX: ");
@@ -534,7 +568,7 @@ void calData2User()
       }
       else
       {
-#ifdef DEBUG_CODE
+#ifdef DEBUG
         Serial.println("User Calibration: Some other Reason!");
 #endif
         s--;
@@ -557,7 +591,7 @@ void calData2User()
       while (s < sampleQty - 1 && ((millis() - waitTimer[3]) < 60)) {}
     }
 
-#ifdef DEBUG_CODE
+#ifdef DEBUG
     Serial.print("QW_AVG:   ");
     Serial.print(q_Avg.w); Serial.print("\t");
     Serial.print("QX_AVG:   ");
@@ -570,7 +604,7 @@ void calData2User()
 
     s2j_q[i] = calcS2JQuat(initial_q[i], q_Avg); //[i]);
 
-#ifdef DEBUG_CODE
+#ifdef DEBUG
     Serial.print("QW_CORR: ");
     Serial.print(s2j_q[i].w); Serial.print("\t");
     Serial.print("QX_CORR: ");
@@ -589,6 +623,8 @@ void calData2User()
 
   blinkState[0] = true;
   blinkState[1] = false;
+  digitalWrite(BLUE_LED, blinkState[0]);
+  digitalWrite(RED_LED, blinkState[1]);
   pause(500);
   timer = millis();
 
@@ -598,42 +634,43 @@ void troubleshoot_Err(int i)
 {
   if (sentral[i].getResetStatus() == 1)
   {
-#ifdef DEBUG_CODE
+#ifdef DEBUG
     Serial.println("\n****ERROR: Sentral Configuration File Needs Uploading! ****\n");
 #endif
   }
   if (sentral[i].getEEUploadErr() == 1)
   {
-#ifdef DEBUG_CODE
+#ifdef DEBUG
     Serial.println("\n****ERROR: Issue with uploading from EEPROM! ****\n");
 #endif
   }
 
   if (sentral[i].getGRate() == 0)
   {
-#ifdef DEBUG_CODE
+#ifdef DEBUG
     Serial.println("\n****ERROR: Gyro Data Rate is Zero! ****\n");
 #endif
   }
 
   if (sentral[i].getMRate() == 0)
   {
-#ifdef DEBUG_CODE
+#ifdef DEBUG
     Serial.println("\n****ERROR: Magnetometer Data Rate is Zero! ****\n");
 #endif
   }
 
   if (sentral[i].getARate() == 0)
   {
-#ifdef DEBUG_CODE
+#ifdef DEBUG
     Serial.println("\n****ERROR: Accelerometer Data Rate is Zero! ****\n");
 #endif
   }
 
-#ifdef DEBUG_CODE
+#ifdef DEBUG
   Serial.println("\n****Attempting to Restart Sensor! ****\n");
 #endif
   sentral[i].restartSentral();
+  delay(2000);
   setupSensor(i);
 }
 

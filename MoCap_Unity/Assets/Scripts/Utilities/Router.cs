@@ -38,6 +38,11 @@ public class Router : MonoBehaviour {
         return MainUserWithID().Child("data").Child(aid);
     }
 
+    public static DatabaseReference Data()
+    {
+        return MainUserWithID().Child("data");
+    }
+
     /// <summary>
     /// Provides a reference to the assessment node on Firebase 
     /// </summary>
