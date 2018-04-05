@@ -1128,11 +1128,11 @@ public class RunAlgorithms : MonoBehaviour
 
             if (data.Count == 7) //data.Count != 0)
             {
-                //Joints[0].transform.rotation = SensData2Quat(data[0]);
-                //Joints[1].transform.rotation = SensData2Quat(data[1]);
-                //Joints[2].transform.rotation = SensData2Quat(data[2]);
-                //Joints[3].transform.rotation = SensData2Quat(data[3]);
-                //Joints[4].transform.rotation = SensData2Quat(data[4]);
+                Joints[0].transform.rotation = SensData2Quat(data[0]);
+                Joints[1].transform.rotation = SensData2Quat(data[1]);
+                Joints[2].transform.rotation = SensData2Quat(data[2]);
+                Joints[3].transform.rotation = SensData2Quat(data[3]);
+                Joints[4].transform.rotation = SensData2Quat(data[4]);
                 Joints[5].transform.rotation = SensData2Quat(data[5]);
                 Joints[6].transform.rotation = SensData2Quat(data[6]);
 

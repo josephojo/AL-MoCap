@@ -46,7 +46,7 @@
 bool blinkState[2] = {false, false};
 bool calibrate_Data = false;
 bool calibrated_Data = false;
-uint8_t sampleQty = 5;
+uint8_t sampleQty = 1; //5;
 
 
 unsigned long tStart  = 0;
@@ -56,7 +56,7 @@ const uint8_t PWMVal = 180;
 SentralMM sentral[NUM_IMUS];
 // Sentral control/status vars
 bool sentralReady[NUM_IMUS];
-uint8_t sentralErr[NUM_IMUS] = {0, 0, 0, 0, 0, 0, 0}; // FIFO storage buffer
+uint8_t sentralErr[NUM_IMUS]; // FIFO storage buffer
 int eepromAddress = 0; // Calibration offsets from the eeprom are going to be stored here.
 double waitTimer[5] = {0.0, 0.0, 0.0, 0.0, 0.0};
 uint8_t magRate = 100; //30;
@@ -119,12 +119,12 @@ void setup()
 
   // Displays extra info through wifi module to Debug the code
 #ifdef DEBUG
-  Serial.begin(9600);
+  Serial.begin(115200);
   //while (!Serial); // wait for Arduino serial to be ready
 #endif
 
 #ifdef TRANSMIT
-  Serial4.begin(9600);
+  Serial4.begin(115200);
   //while (!Serial); // wait for Arduino serial to be ready
 #endif
 
@@ -148,15 +148,15 @@ void setup()
 
 
 #ifdef DEBUG
-    //    Serial.print((char)(i + 65)); Serial.print(",");
-    //    Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
-    //    Serial.print(initial_q[i].x); Serial.print(",");
-    //    Serial.print(initial_q[i].y); Serial.print(",");
-    //    Serial.print(initial_q[i].z);
-    //    if (i < NUM_IMUS - 1)
-    //      Serial.print("/");
-    //    else if (i >= NUM_IMUS - 1)
-    //      Serial.println();
+//        Serial.print((char)(i + 65)); Serial.print(",");
+//        Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
+//        Serial.print(initial_q[i].x); Serial.print(",");
+//        Serial.print(initial_q[i].y); Serial.print(",");
+//        Serial.print(initial_q[i].z);
+//        if (i < NUM_IMUS - 1)
+//          Serial.print("/");
+//        else if (i >= NUM_IMUS - 1)
+//          Serial.println();
 #endif
   }
 
@@ -277,17 +277,15 @@ void loop()
         waitTimer[2] = millis();
       }
 
-
-      // Get Data every 50 millisecond through WIFI
-      if ((millis() - waitTimer[1]) > 200)
+      if ((millis() - waitTimer[1]) > 50)
       {
-#ifdef TRANSMIT      
-      Serial4.print(millis() - tStart); Serial4.print("|");
-#endif
-
-#ifdef DEBUG
-      Serial.print(millis() - tStart); Serial.print("|");
-#endif
+//#ifdef TRANSMIT      
+//      Serial4.print(millis() - tStart); Serial4.print("|");
+//#endif
+//
+//#ifdef DEBUG
+//      Serial.print(millis() - tStart); Serial.print("|");
+//#endif
         for (uint8_t i = 0; i < NUM_IMUS; i++)
         {
           tcaselect(i);
@@ -335,6 +333,10 @@ void loop()
 
 #ifdef DEBUG
             //Serial.print("QW:   ");
+            if(i == 0)
+            {
+              Serial.print(millis() - tStart); Serial.print("|");
+            }
             Serial.print((char)(i + 65)); //Serial.print(",");
             Serial.print(joint_q[i].w); Serial.print(","); //Serial.print("\t");
             //Serial.print("QX:   ");
@@ -354,11 +356,18 @@ void loop()
 
 #ifdef TRANSMIT
    // Data Format: 24593|A0.03,0.94,-0.32,0.15,B0.18,-0.07,-0.46,0.87,C0.71,0.60,-0.22,-0.30,D0.32,-0.18,0.23,0.90,E0.16,-0.76,-0.63,0.02,F0.36,0.06,0.07,0.93,G0.03,-0.83,-0.55,0.02,
+            
+            if(i == 0)
+            {
+              Serial4.print(millis() - tStart); Serial4.print("|");
+            }
             Serial4.print((char)(i + 65));
-            Serial4.print(joint_q[i].w); Serial4.print(",");
+            Serial4.print(joint_q[i].w); Serial4.print(","); //joint_q
             Serial4.print(joint_q[i].x); Serial4.print(",");
             Serial4.print(joint_q[i].y); Serial4.print(",");
             Serial4.print(joint_q[i].z); Serial4.print(",");
+            if (i >= NUM_IMUS - 1)
+              Serial4.println();
 #endif
 
           } else
