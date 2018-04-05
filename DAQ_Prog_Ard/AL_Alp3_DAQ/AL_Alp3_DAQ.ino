@@ -50,6 +50,7 @@ uint8_t sampleQty = 1; //5;
 
 
 unsigned long tStart  = 0;
+unsigned long prevMillis  = 0;
 unsigned long timer = 0;
 const uint8_t PWMVal = 180;
 
@@ -79,7 +80,7 @@ float ypr[3]; // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vecto
 void tcaselect(uint8_t i);
 void setupSensor(int i);
 void troubleshoot_Err(int i);
-void calibrateData();
+void checkCalReq();
 void checkINT0();
 void checkINT1();
 void checkINT2();
@@ -223,7 +224,7 @@ void setup()
   }
 
  // ##############----------- INTERRUPT ATTACH ------------------->
-  attachInterrupt(digitalPinToInterrupt(BUTTON_INT), calibrateData, LOW);
+  //attachInterrupt(digitalPinToInterrupt(BUTTON_INT), checkCalReq, LOW);
   attachInterrupt(digitalPinToInterrupt(SENTRAL0_INT), checkINT0, RISING);
   attachInterrupt(digitalPinToInterrupt(SENTRAL1_INT), checkINT1, RISING);
   attachInterrupt(digitalPinToInterrupt(SENTRAL2_INT), checkINT2, RISING);
@@ -234,6 +235,8 @@ void setup()
 
 
   // <------------ INTERRUPT ATTACH END --------------
+
+  prevMillis = tStart;
   #ifdef DEBUG
 Serial.println("Out!");
 #endif
@@ -247,6 +250,8 @@ bool calibratedOnce = false;
 
 void loop()
 {
+  checkCalReq();
+  
   if (!calibratedOnce)
   {
     
@@ -312,6 +317,7 @@ void loop()
             break;
           } else if ((eventStatus & 0x04) == 0x04)
           {
+            unsigned long currMillis = millis();
             sentral[i].getQuat(&sentral_q[i]);
 
 #ifdef DEBUG
@@ -335,7 +341,7 @@ void loop()
             //Serial.print("QW:   ");
             if(i == 0)
             {
-              Serial.print(millis() - tStart); Serial.print("|");
+              Serial.print(currMillis - prevMillis); Serial.print("|");
             }
             Serial.print((char)(i + 65)); //Serial.print(",");
             Serial.print(joint_q[i].w); Serial.print(","); //Serial.print("\t");
@@ -359,7 +365,7 @@ void loop()
             
             if(i == 0)
             {
-              Serial4.print(millis() - tStart); Serial4.print("|");
+              Serial4.print(currMillis - prevMillis); Serial4.print("|");
             }
             Serial4.print((char)(i + 65));
             Serial4.print(joint_q[i].w); Serial4.print(","); //joint_q
@@ -369,6 +375,7 @@ void loop()
             if (i >= NUM_IMUS - 1)
               Serial4.println();
 #endif
+            prevMillis = currMillis;
 
           } else
           { //Serial.print("Event Status: "); Serial.println(eventStatus);
@@ -384,7 +391,6 @@ void loop()
         digitalWrite(RED_LED, LOW);
         while (1) {}
       }
-
     }
 
   }
@@ -451,13 +457,31 @@ void tcaselect(uint8_t i)
   Wire.endTransmission();
 }
 
+// Variables will change: Used for DEBOUNCING!
+int ledState = HIGH;         // the current state of the output pin
+int buttonState;             // the current reading from the input pin
+bool lastButtonState = false;   // the previous reading from the input pin
 
-void calibrateData()
+// the following variables are long's because the time, measured in miliseconds,
+// will quickly become a bigger number than can be stored in an int.
+long lastDebounceTime = 0;  // the last time the output pin was toggled
+long debounceDelay = 500; 
+
+void checkCalReq()
 {
-  if(digitalRead(BUTTON_INT) == 0)
+  int reading = digitalRead(BUTTON_INT);
+  if(reading == 0) //!= lastButtonState)//
   {
-    calibrate_Data = true;
-    Serial.print("Bttn Status: "); Serial.println(digitalRead(BUTTON_INT));
+    // reset the debouncing timer
+    
+    if ((millis() - lastDebounceTime) > debounceDelay) 
+    {
+      // whatever the reading is at, it's been there for longer
+      // than the debounce delay, so take it as the actual current state:
+      calibrate_Data = true;lastDebounceTime = millis();
+      Serial.print("Bttn Status: "); Serial.println(reading);
+    }
+
   }
 }
 

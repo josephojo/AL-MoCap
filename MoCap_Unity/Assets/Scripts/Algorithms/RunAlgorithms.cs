@@ -1117,7 +1117,7 @@ public class RunAlgorithms : MonoBehaviour
         #endregion
 
         #region Uses Queue
-        if (DatabaseManager.InputQ.Count > 0 && DatabaseManager.DataChanged == true) //(i >= DatabaseManager.Data.Count && DatabaseManager.DataChanged == true)
+        if (DatabaseManager.InputQ.Count > 0 ) //&& DatabaseManager.DataChanged == true) //(i >= DatabaseManager.Data.Count && DatabaseManager.DataChanged == true)
         {
             data = DatabaseManager.InputQ.Dequeue();
             dbStamp = DatabaseManager.InputQTime.Dequeue();
@@ -1136,7 +1136,7 @@ public class RunAlgorithms : MonoBehaviour
                 Joints[5].transform.rotation = SensData2Quat(data[5]);
                 Joints[6].transform.rotation = SensData2Quat(data[6]);
 
-                Debug.LogFormat("Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[5]).w, SensData2Quat(data[5]).x, SensData2Quat(data[5]).y, SensData2Quat(data[5]).z);
+                Debug.LogFormat("TimeStamp: {4}, Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[5]).w, SensData2Quat(data[5]).x, SensData2Quat(data[5]).y, SensData2Quat(data[5]).z, dbStamp);
 
                 for (int z = 0; z < num_joints; z++)
                 {

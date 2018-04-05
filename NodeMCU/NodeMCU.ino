@@ -10,7 +10,6 @@
 #define WIFI_PASSWORD "itspassword"
 
 //#define DEBUG
-
 #define TRANSMIT
 
 String dataPath = "/users/Ar07J0EG9hWlUwQvTBEeH0pvMXu2/data/-L5ohOlG020TA2K3tXrg/";
@@ -21,10 +20,21 @@ unsigned long startTime = 0;
 
 long tim = 0;
 
+int quatNum = 0;
+int sensorNum = 0;
+unsigned long timeStamp = 0;
+String sensorID[7];
+float quats[7][4];
+
+String str = "";
+char chr;
+
+int y = 0;
+
 
 void setup() {
   Serial.begin(115200);
-  //  Serial.swap();
+  //Serial.swap();
 
   // connect to wifi.
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -114,7 +124,7 @@ void setup() {
 
   // Retrieve the Date-Time Stamp on firebase from timeStampPath
   FirebaseObject fbj = Firebase.get(timeStampPath); //Using the Firebase.get function, a FirebaseObject value is returned (similar to stock Firebase's "Snapshot")
-  delay(5);
+    delay(5);
   if (Firebase.failed()) // Checks if operation failed
   {
 #ifdef DEBUG
@@ -140,22 +150,12 @@ void setup() {
   temp.toCharArray(charStr, sizeof(charStr));
   //Serial.print("charStr = ");Serial.println(charStr);
   startTime = strtoul (charStr, NULL, 0); //COnverts string to unsigned Long
-  Serial.print("startTime = "); Serial.println(startTime);
+  Serial.print("startTime = ");Serial.println(startTime);
+  timeStamp = startTime;
 
 }
 //############# Setup Ends Here ####################
 
-
-int quatNum = 0;
-int sensorNum = 0;
-long timeStamp = 0;
-String sensorID[7];
-float quats[7][4];
-
-String str = "";
-char chr;
-
-int y = 0;
 void loop()
 {
   //1234|A0.1,0.2,0.3,0.4,B0.5,0.6,0.7,0.8,C0.9,1.0,1.1,1.2,D1.3,1.4,1.5,1.6,E1.7,1.8,1.9,2.0,F2.1,2.2,2.3,2.4,G2.5,2.6,2.7,2.8,
@@ -163,11 +163,7 @@ void loop()
   while (Serial.available() > 0)
   {
     chr = Serial.read();
-
-#ifdef DEBUG
-    Serial.println("Character: " + chr);
-#endif
-
+      
     if (chr == 'A')
     {
       sensorNum = 1;
@@ -220,12 +216,12 @@ void loop()
     else if (chr == ',')
     {
       quats[sensorNum - 1][quatNum] = str.toFloat();
-
-#ifdef DEBUG
+      
+      #ifdef DEBUG
       Serial.print("str: "); Serial.println(str);
       Serial.print("quatNum: "); Serial.println(quatNum);
-#endif
-
+      #endif
+      
       quatNum++;
       str = "";
 
@@ -234,12 +230,16 @@ void loop()
     {
       char conv[256];
       str.toCharArray(conv, sizeof(conv));
-      timeStamp = atol(conv);
+      unsigned long tempStamp = strtoul (conv, NULL, 0);
+      #ifdef DEBUG
+      Serial.print("Converted tempStamp :");Serial.println(tempStamp);
+      #endif
+      timeStamp += tempStamp;
       str = "";
-
-#ifdef DEBUG
-      Serial.print("Converted Timestamp :"); Serial.println(timeStamp);
-#endif
+      
+      #ifdef DEBUG
+      Serial.print("Timestamp :");Serial.println(timeStamp);
+      #endif
     }
     else if (chr == '\n' || chr == '\r')
     {
@@ -256,32 +256,32 @@ void loop()
           nested["qy"] = quats[i][2];
           nested["qz"] = quats[i][3];
         }
-
-        unsigned long d = (timeStamp + startTime);
-        String newDataPath = dataPath + databaseTime.substring(0, 3) + d ;
-
-#ifdef DEBUG
-        Serial.print("d: "); Serial.println(d);
+  
+        //unsigned long d = (timeStamp + startTime);
+        String newDataPath = dataPath + databaseTime.substring(0, 3) + timeStamp ;
+        
+        #ifdef DEBUG
+        //Serial.print("d: "); Serial.println(d);
         Serial.print("newDataPath: "); Serial.println(newDataPath);
-        Serial.print("root: "); root.printTo(Serial); Serial.println();
-#endif
-
-#ifdef TRANSMIT
-        Firebase.set(newDataPath, root);
-        if (Firebase.failed())
-        {
-#ifdef DEBUG
-          Serial.print("Data Transmission Failed: ");
-          Serial.println(Firebase.error());
-#endif
-          return;
-        } else
-        {
-#ifdef DEBUG
-          Serial.println("Data Transmitted");
-#endif
-        }
-#endif
+//        Serial.print("root: "); root.printTo(Serial); Serial.println();
+        #endif
+        
+        #ifdef TRANSMIT
+          Firebase.set(newDataPath, root);
+          if (Firebase.failed())
+          {
+          #ifdef DEBUG
+            Serial.print("Data Transmission Failed: ");
+            Serial.println(Firebase.error());
+          #endif
+            return;
+          } else
+          {
+          #ifdef DEBUG
+            Serial.println("Data Transmitted");
+          #endif
+          }
+        #endif
         sensorNum = 0;
         //sensorBuff.clear();
       }
