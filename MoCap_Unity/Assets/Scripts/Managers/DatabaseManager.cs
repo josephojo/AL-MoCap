@@ -53,7 +53,7 @@ public class DatabaseManager : MonoBehaviour
         FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://ultima-apparel.firebaseio.com/");  //("https://ultima-apparel.firebaseio.com/"); // ("https://al-test-916f1.firebaseio.com/");
         tempData.Clear();
 
-        Router.DataWithAssID(Router.AID).ChildAdded += HandleChildAdded; //.LimitToLast(1)
+        Router.DataWithAssID(Router.AID).LimitToLast(1).ChildAdded += HandleChildAdded; //.LimitToLast(1)
         //Router.DataWithAssID(Router.AID).LimitToLast(1).ChildChanged += HandleChildChanged;
 
         //Router.Data().ChildChanged += HandleChildChanged;
