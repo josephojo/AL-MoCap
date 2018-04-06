@@ -931,7 +931,7 @@ public class RunAlgorithms : MonoBehaviour
         GrabAnalysisInfo();
         Debug.Log("Grabbed Analysis Info");
 
-        DatabaseManager.DeleteAllData();
+        //DatabaseManager.DeleteAllData();
 
         Thread.Sleep(1000);
 
@@ -1129,12 +1129,12 @@ public class RunAlgorithms : MonoBehaviour
             if (data.Count == 7) //data.Count != 0)
             {
                 Joints[0].transform.rotation = SensData2Quat(data[0]);
-                //Joints[1].transform.rotation = SensData2Quat(data[1]);
-                //Joints[2].transform.rotation = SensData2Quat(data[2]);
-                //Joints[3].transform.rotation = SensData2Quat(data[3]);
-                //Joints[4].transform.rotation = SensData2Quat(data[4]);
-                //Joints[5].transform.rotation = SensData2Quat(data[5]);
-                //Joints[6].transform.rotation = SensData2Quat(data[6]);
+                Joints[1].transform.rotation = SensData2Quat(data[1]);
+                Joints[2].transform.rotation = SensData2Quat(data[2]);
+                Joints[3].transform.rotation = SensData2Quat(data[3]);
+                Joints[4].transform.rotation = SensData2Quat(data[4]);
+                Joints[5].transform.rotation = SensData2Quat(data[5]);
+                Joints[6].transform.rotation = SensData2Quat(data[6]);
 
                 Debug.LogFormat("TimeStamp: {4}, Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[5]).w, SensData2Quat(data[5]).x, SensData2Quat(data[5]).y, SensData2Quat(data[5]).z, dbStamp);
 
@@ -1174,12 +1174,12 @@ public class RunAlgorithms : MonoBehaviour
                 if (updateCouter >= 200)
                 {
                     updateCouter = 0;
-                    t = new Thread(() =>
-                    {
-                        DatabaseManager.DeleteAllData();
+                    //t = new Thread(() =>
+                    //{
+                        //DatabaseManager.DeleteAllData();
                         updateRiskOcc();
-                    });
-                    t.Start();
+                    //});
+                    //t.Start();
                 }
 
                 data.Clear();
@@ -1187,6 +1187,9 @@ public class RunAlgorithms : MonoBehaviour
         }
         #endregion
     }
+
+    //IEnumerator UpdateResults()
+    //{ }
 
     DateTime Milli2DateTime(string milli)
     {
@@ -1273,6 +1276,7 @@ public class RunAlgorithms : MonoBehaviour
         double score = cummERMScore;
         //cummDataCount = 0;
         //cummERMScore = 0;
+        Debug.Log("Updating");
 
         #region Updates the entries associated with the risk in the Assessment node on firebase
         Dictionary<string, object> totalOccDic = new Dictionary<string, object>();

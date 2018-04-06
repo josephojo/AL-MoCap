@@ -149,15 +149,15 @@ void setup()
 
 
 #ifdef DEBUG
-//        Serial.print((char)(i + 65)); Serial.print(",");
-//        Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
-//        Serial.print(initial_q[i].x); Serial.print(",");
-//        Serial.print(initial_q[i].y); Serial.print(",");
-//        Serial.print(initial_q[i].z);
-//        if (i < NUM_IMUS - 1)
-//          Serial.print("/");
-//        else if (i >= NUM_IMUS - 1)
-//          Serial.println();
+    //        Serial.print((char)(i + 65)); Serial.print(",");
+    //        Serial.print(initial_q[i].w); Serial.print(","); //Serial.print("\t");
+    //        Serial.print(initial_q[i].x); Serial.print(",");
+    //        Serial.print(initial_q[i].y); Serial.print(",");
+    //        Serial.print(initial_q[i].z);
+    //        if (i < NUM_IMUS - 1)
+    //          Serial.print("/");
+    //        else if (i >= NUM_IMUS - 1)
+    //          Serial.println();
 #endif
   }
 
@@ -172,7 +172,7 @@ void setup()
     {
       char chr = Serial4.read();
       //Serial.print("first chr: "); Serial.println(chr);
-      
+
       if (chr == '/')
       {
         tempStr = "";
@@ -180,19 +180,19 @@ void setup()
       else if (chr == '\\')
       { Serial.print("tempStr: "); Serial.println(tempStr);
         if (tempStr == "connected")
-        {          
+        {
           tTempStr = tempStr;
           tempStr = "";
-//          blinkState[0] = true;
-//          blinkState[1] = false;
+          //          blinkState[0] = true;
+          //          blinkState[1] = false;
           //break;
         }
         else if (tempStr == "disconnected")
         {
           digitalWrite(RED_LED, HIGH);
         }
-       
-        
+
+
         if (tempStr == "noTimeStamp" && tTempStr == "connected")
         {
           digitalWrite(RED_LED, HIGH);
@@ -204,7 +204,7 @@ void setup()
             delay(1000);
           }
         }
-        else if(tempStr == "yesTimeStamp" && tTempStr == "connected")
+        else if (tempStr == "yesTimeStamp" && tTempStr == "connected")
         {
           Serial.println("yesTimeStamp and Connected");
           tStart = millis();
@@ -212,7 +212,7 @@ void setup()
           blinkState[1] = false;
           digitalWrite(BLUE_LED, blinkState[0]);
           digitalWrite(RED_LED, blinkState[1]);
-          break; 
+          break;
         }
       }
       else
@@ -220,10 +220,10 @@ void setup()
         tempStr += chr;
       }
     }
-  
+
   }
 
- // ##############----------- INTERRUPT ATTACH ------------------->
+  // ##############----------- INTERRUPT ATTACH ------------------->
   //attachInterrupt(digitalPinToInterrupt(BUTTON_INT), checkCalReq, LOW);
   attachInterrupt(digitalPinToInterrupt(SENTRAL0_INT), checkINT0, RISING);
   attachInterrupt(digitalPinToInterrupt(SENTRAL1_INT), checkINT1, RISING);
@@ -237,9 +237,10 @@ void setup()
   // <------------ INTERRUPT ATTACH END --------------
 
   prevMillis = tStart;
-  #ifdef DEBUG
-Serial.println("Out!");
+#ifdef DEBUG
+  Serial.println("Out!");
 #endif
+
 }
 
 bool calibratedOnce = false;
@@ -251,12 +252,12 @@ bool calibratedOnce = false;
 void loop()
 {
   checkCalReq();
-  
+
   if (!calibratedOnce)
   {
-    
+
     if ((millis() - waitTimer[4]) > 150) // blink LED to indicate activity
-    {Serial.println("In Calibrated Once");
+    { Serial.println("In Calibrated Once");
       blinkState[0] = !blinkState[0];
       blinkState[1] = !blinkState[1];
       digitalWrite(BLUE_LED, blinkState[0]);
@@ -278,23 +279,24 @@ void loop()
       if ((millis() - waitTimer[2]) > 500) // blink LED to indicate activity
       {
         blinkState[0] = !blinkState[0];
+        digitalWrite(RED_LED, LOW);
         digitalWrite(BLUE_LED, blinkState[0]);
         waitTimer[2] = millis();
       }
 
       if ((millis() - waitTimer[1]) > 50)
       {
-//#ifdef TRANSMIT      
-//      Serial4.print(millis() - tStart); Serial4.print("|");
-//#endif
-//
-//#ifdef DEBUG
-//      Serial.print(millis() - tStart); Serial.print("|");
-//#endif
+        //#ifdef TRANSMIT
+        //      Serial4.print(millis() - tStart); Serial4.print("|");
+        //#endif
+        //
+        //#ifdef DEBUG
+        //      Serial.print(millis() - tStart); Serial.print("|");
+        //#endif
         for (uint8_t i = 0; i < NUM_IMUS; i++)
         {
           tcaselect(i);
-          
+
           if (sentralErr[i] == 1)
           {
             troubleshoot_Err(i);
@@ -321,25 +323,25 @@ void loop()
             sentral[i].getQuat(&sentral_q[i]);
 
 #ifdef DEBUG
-//            //Serial.print("QW:   ");
-//            Serial.print((char)(i + 65)); //Serial.print(",");
-//            Serial.print(sentral_q[i].w); Serial.print(","); //Serial.print("\t");
-//            //Serial.print("QX:   ");
-//            Serial.print(sentral_q[i].x); Serial.print(",");
-//            //Serial.print("QY:   ");
-//            Serial.print(sentral_q[i].y); Serial.print(",");
-//            //Serial.print("QZ:   ");
-//            Serial.print(sentral_q[i].z); Serial.print(",");
-////            if (i < NUM_IMUS - 1)
-////              Serial.print("/");
-////            else 
-//            if (i >= NUM_IMUS - 1)
-//              Serial.println();
+            //            //Serial.print("QW:   ");
+            //            Serial.print((char)(i + 65)); //Serial.print(",");
+            //            Serial.print(sentral_q[i].w); Serial.print(","); //Serial.print("\t");
+            //            //Serial.print("QX:   ");
+            //            Serial.print(sentral_q[i].x); Serial.print(",");
+            //            //Serial.print("QY:   ");
+            //            Serial.print(sentral_q[i].y); Serial.print(",");
+            //            //Serial.print("QZ:   ");
+            //            Serial.print(sentral_q[i].z); Serial.print(",");
+            ////            if (i < NUM_IMUS - 1)
+            ////              Serial.print("/");
+            ////            else
+            //            if (i >= NUM_IMUS - 1)
+            //              Serial.println();
 #endif
 
 #ifdef DEBUG
             //Serial.print("QW:   ");
-            if(i == 0)
+            if (i == 0)
             {
               Serial.print(currMillis - prevMillis); Serial.print("|");
             }
@@ -351,9 +353,9 @@ void loop()
             Serial.print(joint_q[i].y); Serial.print(",");
             //Serial.print("QZ:   ");
             Serial.print(joint_q[i].z); Serial.print(",");
-//            if (i < NUM_IMUS - 1)
-//              Serial.print("/");
-//            else 
+            //            if (i < NUM_IMUS - 1)
+            //              Serial.print("/");
+            //            else
             if (i >= NUM_IMUS - 1)
               Serial.println();
 #endif
@@ -361,9 +363,9 @@ void loop()
             joint_q[i] = s2j_q[i].getProduct(sentral_q[i]); // This line gets the true rotations of the joints based on the relationship with initial orien and sentral orien
 
 #ifdef TRANSMIT
-   // Data Format: 24593|A0.03,0.94,-0.32,0.15,B0.18,-0.07,-0.46,0.87,C0.71,0.60,-0.22,-0.30,D0.32,-0.18,0.23,0.90,E0.16,-0.76,-0.63,0.02,F0.36,0.06,0.07,0.93,G0.03,-0.83,-0.55,0.02,
-            
-            if(i == 0)
+            // Data Format: 24593|A0.03,0.94,-0.32,0.15,B0.18,-0.07,-0.46,0.87,C0.71,0.60,-0.22,-0.30,D0.32,-0.18,0.23,0.90,E0.16,-0.76,-0.63,0.02,F0.36,0.06,0.07,0.93,G0.03,-0.83,-0.55,0.02,
+
+            if (i == 0)
             {
               Serial4.print(currMillis - prevMillis); Serial4.print("|");
             }
@@ -385,14 +387,51 @@ void loop()
         waitTimer[1] = millis();
       }
 
-      if ((millis() - timer) > 120000)
+      if ((millis() - timer) > 600000)
       {
         digitalWrite(BLUE_LED, HIGH);
         digitalWrite(RED_LED, LOW);
         while (1) {}
       }
     }
+  }
 
+  String tempStr = "";
+  //Check for connection error from NodeMCU
+  while (1)
+  {
+    if (Serial4.available() > 0)
+    {
+      digitalWrite(BLUE_LED, LOW);
+
+      char chr = Serial4.read();
+
+      if (chr == '/')
+      {
+        tempStr = "";
+      }
+      else if (chr == '\\')
+      {
+        if (tempStr == "connected")
+        {
+          tempStr = "";
+          break;
+        }
+        else if (tempStr == "disconnected")
+        {
+          Serial.print("DIsconnected");
+          digitalWrite(RED_LED, HIGH);
+        }
+      }
+      else
+      {
+        tempStr += chr;
+      }
+    }
+    else
+    {
+      break;
+    }
   }
 }
 
@@ -429,10 +468,10 @@ void setupSensor(int i)
     }
 #endif
   } else {
-    #ifdef DEBUG
+#ifdef DEBUG
     Serial.print("Sensor Initialized! - ");
     Serial.println((char)(i + 65));
-    #endif
+#endif
     sentralReady[i] = true;
   }
 
@@ -465,20 +504,20 @@ bool lastButtonState = false;   // the previous reading from the input pin
 // the following variables are long's because the time, measured in miliseconds,
 // will quickly become a bigger number than can be stored in an int.
 long lastDebounceTime = 0;  // the last time the output pin was toggled
-long debounceDelay = 500; 
+long debounceDelay = 500;
 
 void checkCalReq()
 {
   int reading = digitalRead(BUTTON_INT);
-  if(reading == 0) //!= lastButtonState)//
+  if (reading == 0) //!= lastButtonState)//
   {
     // reset the debouncing timer
-    
-    if ((millis() - lastDebounceTime) > debounceDelay) 
+
+    if ((millis() - lastDebounceTime) > debounceDelay)
     {
       // whatever the reading is at, it's been there for longer
       // than the debounce delay, so take it as the actual current state:
-      calibrate_Data = true;lastDebounceTime = millis();
+      calibrate_Data = true; lastDebounceTime = millis();
       Serial.print("Bttn Status: "); Serial.println(reading);
     }
 

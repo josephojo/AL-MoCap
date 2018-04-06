@@ -30,6 +30,7 @@ String str = "";
 char chr;
 
 int y = 0;
+unsigned long waitTimer = 0;
 
 
 void setup() {
@@ -124,7 +125,7 @@ void setup() {
 
   // Retrieve the Date-Time Stamp on firebase from timeStampPath
   FirebaseObject fbj = Firebase.get(timeStampPath); //Using the Firebase.get function, a FirebaseObject value is returned (similar to stock Firebase's "Snapshot")
-    delay(5);
+  delay(5);
   if (Firebase.failed()) // Checks if operation failed
   {
 #ifdef DEBUG
@@ -150,8 +151,27 @@ void setup() {
   temp.toCharArray(charStr, sizeof(charStr));
   //Serial.print("charStr = ");Serial.println(charStr);
   startTime = strtoul (charStr, NULL, 0); //COnverts string to unsigned Long
-  Serial.print("startTime = ");Serial.println(startTime);
+  #ifdef DEBUG
+  Serial.print("startTime = "); Serial.println(startTime);
+  #endif
   timeStamp = startTime;
+
+#ifdef TRANSMIT
+  Firebase.remove(dataPath);
+  if (Firebase.failed())
+  {
+#ifdef DEBUG
+    Serial.print("Data Deletion Failed: ");
+    Serial.println(Firebase.error());
+#endif
+    return;
+  } else
+  {
+#ifdef DEBUG
+    Serial.println("Data Deleted");
+#endif
+  }
+#endif
 
 }
 //############# Setup Ends Here ####################
@@ -163,7 +183,7 @@ void loop()
   while (Serial.available() > 0)
   {
     chr = Serial.read();
-      
+
     if (chr == 'A')
     {
       sensorNum = 1;
@@ -216,12 +236,12 @@ void loop()
     else if (chr == ',')
     {
       quats[sensorNum - 1][quatNum] = str.toFloat();
-      
-      #ifdef DEBUG
+
+#ifdef DEBUG
       Serial.print("str: "); Serial.println(str);
       Serial.print("quatNum: "); Serial.println(quatNum);
-      #endif
-      
+#endif
+
       quatNum++;
       str = "";
 
@@ -231,15 +251,15 @@ void loop()
       char conv[256];
       str.toCharArray(conv, sizeof(conv));
       unsigned long tempStamp = strtoul (conv, NULL, 0);
-      #ifdef DEBUG
-      Serial.print("Converted tempStamp :");Serial.println(tempStamp);
-      #endif
+#ifdef DEBUG
+      Serial.print("Converted tempStamp :"); Serial.println(tempStamp);
+#endif
       timeStamp += tempStamp;
       str = "";
-      
-      #ifdef DEBUG
-      Serial.print("Timestamp :");Serial.println(timeStamp);
-      #endif
+
+#ifdef DEBUG
+      Serial.print("Timestamp :"); Serial.println(timeStamp);
+#endif
     }
     else if (chr == '\n' || chr == '\r')
     {
@@ -256,32 +276,32 @@ void loop()
           nested["qy"] = quats[i][2];
           nested["qz"] = quats[i][3];
         }
-  
+
         //unsigned long d = (timeStamp + startTime);
         String newDataPath = dataPath + databaseTime.substring(0, 3) + timeStamp ;
-        
-        #ifdef DEBUG
+
+#ifdef DEBUG
         //Serial.print("d: "); Serial.println(d);
         Serial.print("newDataPath: "); Serial.println(newDataPath);
-//        Serial.print("root: "); root.printTo(Serial); Serial.println();
-        #endif
-        
-        #ifdef TRANSMIT
-          Firebase.set(newDataPath, root);
-          if (Firebase.failed())
-          {
-          #ifdef DEBUG
-            Serial.print("Data Transmission Failed: ");
-            Serial.println(Firebase.error());
-          #endif
-            return;
-          } else
-          {
-          #ifdef DEBUG
-            Serial.println("Data Transmitted");
-          #endif
-          }
-        #endif
+        //        Serial.print("root: "); root.printTo(Serial); Serial.println();
+#endif
+
+#ifdef TRANSMIT
+        Firebase.set(newDataPath, root);
+        if (Firebase.failed())
+        {
+#ifdef DEBUG
+          Serial.print("Data Transmission Failed: ");
+          Serial.println(Firebase.error());
+#endif
+          return;
+        } else
+        {
+#ifdef DEBUG
+          Serial.println("Data Transmitted");
+#endif
+        }
+#endif
         sensorNum = 0;
         //sensorBuff.clear();
       }
@@ -294,6 +314,60 @@ void loop()
     }
 
 
+  }
+
+  // checks if wifi is still connected
+  if (WiFi.status() != WL_CONNECTED)
+  {
+#ifdef DEBUG
+    Serial.print("connecting");
+#endif
+    while (WiFi.status() != WL_CONNECTED)
+    {
+#ifdef DEBUG
+      Serial.print(".");
+#endif
+
+#ifdef TRANSMIT
+      if ((millis() - tim) > 20)
+      {
+        Serial.print("/disconnected\\");
+        tim = millis();
+      }
+#endif
+      delay(500);
+    }
+#ifdef DEBUG
+    Serial.println();
+    Serial.print("connected: ");
+    Serial.println(WiFi.localIP());
+#endif
+
+#ifdef TRANSMIT
+    Serial.print("/connected\\");
+#endif
+  }
+
+  // Clears the data on Firebase every 2 mins
+  if ((millis() - waitTimer) > 120000)
+  {
+#ifdef TRANSMIT
+    Firebase.remove(dataPath);
+    if (Firebase.failed())
+    {
+#ifdef DEBUG
+      Serial.print("Data Deletion Failed: ");
+      Serial.println(Firebase.error());
+#endif
+      return;
+    } else
+    {
+#ifdef DEBUG
+      Serial.println("Data Deleted");
+#endif
+    }
+#endif
+    waitTimer = millis();
   }
 
 }
