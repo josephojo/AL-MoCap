@@ -859,7 +859,7 @@ public class RunAlgorithms : MonoBehaviour
     UInt64 serverDT = 0;
     ulong dbStamp;
 
-    ERM erm = new ERM();
+    ERM erm = new ERM(300, 0, 0);
     Thread t;
     // Use this for initialization
     void Start()
@@ -1128,20 +1128,29 @@ public class RunAlgorithms : MonoBehaviour
 
             if (data.Count == 7) //data.Count != 0)
             {
+
                 Joints[0].transform.rotation = SensData2Quat(data[0]);
                 Joints[1].transform.rotation = SensData2Quat(data[1]);
-                Joints[2].transform.rotation = SensData2Quat(data[2]);
+                //Joints[2].transform.rotation = SensData2Quat(data[2]);
                 Joints[3].transform.rotation = SensData2Quat(data[3]);
-                Joints[4].transform.rotation = SensData2Quat(data[4]);
+                //Joints[4].transform.rotation = SensData2Quat(data[4]);
                 Joints[5].transform.rotation = SensData2Quat(data[5]);
                 Joints[6].transform.rotation = SensData2Quat(data[6]);
 
-                Debug.LogFormat("TimeStamp: {4}, Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[5]).w, SensData2Quat(data[5]).x, SensData2Quat(data[5]).y, SensData2Quat(data[5]).z, dbStamp);
+
+                Debug.LogFormat("A -- TimeStamp: {4}, Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[0]).w, SensData2Quat(data[0]).x, SensData2Quat(data[0]).y, SensData2Quat(data[0]).z, dbStamp);
+                //Debug.LogFormat("B -- TimeStamp: {4}, Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[1]).w, SensData2Quat(data[1]).x, SensData2Quat(data[1]).y, SensData2Quat(data[1]).z, dbStamp);
+                //Debug.LogFormat("C -- TimeStamp: {4}, Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[2]).w, SensData2Quat(data[2]).x, SensData2Quat(data[2]).y, SensData2Quat(data[2]).z, dbStamp);
+                //Debug.LogFormat("D -- TimeStamp: {4}, Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[3]).w, SensData2Quat(data[3]).x, SensData2Quat(data[3]).y, SensData2Quat(data[3]).z, dbStamp);
+                //Debug.LogFormat("E -- TimeStamp: {4}, Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[4]).w, SensData2Quat(data[4]).x, SensData2Quat(data[4]).y, SensData2Quat(data[4]).z, dbStamp);
+                //Debug.LogFormat("F -- TimeStamp: {4}, Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[5]).w, SensData2Quat(data[5]).x, SensData2Quat(data[5]).y, SensData2Quat(data[5]).z, dbStamp);
+                //Debug.LogFormat("G -- TimeStamp: {4}, Qw: {0}, QX: {1}, QY: {2}, QZ: {3}", SensData2Quat(data[6]).w, SensData2Quat(data[6]).x, SensData2Quat(data[6]).y, SensData2Quat(data[6]).z, dbStamp);
 
                 for (int z = 0; z < num_joints; z++)
                 {
                     jointPos[z] = Joints[z].transform.position;
                 }
+                //Debug.LogFormat("TimeStamp: {0}, Left Elbow: {1}, Left Should: {2}", dbStamp, jointPos[0].z * 1000, jointPos[1].z * 1000); // , Right Elbow: {3}, Right Should: {4} , jointPos[5].z, jointPos[4].z);
 
                 bool[] risky = new bool[3];
                 risky[0] = erm.checkBack((jointPos[2].z - jointPos[3].z) * 1000); // Compares the difference between waist location and neckish location and triggers risk when less than limit (Bending)

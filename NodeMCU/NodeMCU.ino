@@ -29,14 +29,22 @@ float quats[7][4];
 String str = "";
 char chr;
 
+int led = BUILTIN_LED;
+
 int y = 0;
 unsigned long waitTimer = 0;
 
 
 void setup() {
-  Serial.begin(115200);
-  //Serial.swap();
+  
+  pinMode(BUILTIN_LED, OUTPUT);     
 
+  //Serial.swap();
+  digitalWrite(BUILTIN_LED, LOW);
+  //delay(1000);
+
+  Serial.begin(115200);
+  
   // connect to wifi.
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 #ifdef DEBUG
@@ -176,9 +184,19 @@ void setup() {
 }
 //############# Setup Ends Here ####################
 
+long ledTimer = 0;
+bool blinkState = false;
+
 void loop()
 {
   //1234|A0.1,0.2,0.3,0.4,B0.5,0.6,0.7,0.8,C0.9,1.0,1.1,1.2,D1.3,1.4,1.5,1.6,E1.7,1.8,1.9,2.0,F2.1,2.2,2.3,2.4,G2.5,2.6,2.7,2.8,
+  if((millis() - ledTimer ) > 500)
+  {
+    blinkState = !blinkState;
+    digitalWrite(led, blinkState);
+    ledTimer = millis();
+  }
+
 
   while (Serial.available() > 0)
   {
@@ -270,7 +288,7 @@ void loop()
         JsonObject& root = sensorBuff.createObject();// SensorId level ("DateTime" : {A,B,C,D,E,F,G})
         for (int i = 0; i < sensorNum; i++)
         {
-          JsonObject& nested = root.createNestedObject(sensorID[i]); // ... => sensorObj //(String)((char)(i + 65)));
+          JsonObject& nested = root.createNestedObject((String)((char)(i + 65))); //sensorID[i]); // ... => sensorObj 
           nested["qw"] = quats[i][0];
           nested["qx"] = quats[i][1];
           nested["qy"] = quats[i][2];
@@ -288,6 +306,7 @@ void loop()
 
 #ifdef TRANSMIT
         Firebase.set(newDataPath, root);
+        delay(50);
         if (Firebase.failed())
         {
 #ifdef DEBUG
@@ -305,7 +324,6 @@ void loop()
         sensorNum = 0;
         //sensorBuff.clear();
       }
-      delay(10);
 
     }
     else
@@ -351,6 +369,7 @@ void loop()
   // Clears the data on Firebase every 2 mins
   if ((millis() - waitTimer) > 120000)
   {
+    delay(50);
 #ifdef TRANSMIT
     Firebase.remove(dataPath);
     if (Firebase.failed())
@@ -359,7 +378,6 @@ void loop()
       Serial.print("Data Deletion Failed: ");
       Serial.println(Firebase.error());
 #endif
-      return;
     } else
     {
 #ifdef DEBUG
@@ -367,6 +385,7 @@ void loop()
 #endif
     }
 #endif
+    delay(50);
     waitTimer = millis();
   }
 

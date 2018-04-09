@@ -9,7 +9,7 @@ public class LimitChecker {
     /// </summary>
     /// <param name="dataValue"> Value that changes that need to be checked. </param>
     /// <param name="limit"> The reference value being compared to. </param>
-    /// <returns> Returns True if the data value is passed the limit provided. </returns>
+    /// <returns> Returns True if the data value is greateer than the limit provided. </returns>
     public bool Chk_Greater(float dataValue, float limit)
     {
         bool passedLimit;
@@ -24,11 +24,11 @@ public class LimitChecker {
     }
 
     /// <summary>
-    /// Checks the value of the input data, and checks if it's greater than the limit.
+    /// Checks the value of the input data, and compares it to the limit.
     /// </summary>
     /// <param name="dataValue"> Value that changes and needs to be checked. </param>
     /// <param name="limit"> The reference value being compared to. </param>
-    /// <returns> Returns True if the data value is passed the limit provided. </returns>
+    /// <returns> Returns True if the data value is less than the limit provided. </returns>
     public bool Chk_Lesser(float dataValue, float limit)
     {
         bool passedLimit;

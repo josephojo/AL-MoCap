@@ -21,8 +21,8 @@ public class ERM {
     {
         // Limit in millimetres
         _backPose_Limit = 300.0f;
-        _elbowPose_L_Limit = 500.0f;
-        _elbowPose_R_Limit = 500.0f;
+        _elbowPose_L_Limit = 0.0f;
+        _elbowPose_R_Limit = 0.0f;
     }
 
     #region Fields
